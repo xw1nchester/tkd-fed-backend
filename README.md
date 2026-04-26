@@ -15,6 +15,11 @@ Apply database migrations:
 npx prisma migrate deploy
 ```
 
+Generate prisma client:
+```bash
+npx prisma generate
+```
+
 Start the development server:
 ```bash
 npm run start:dev

@@ -4,6 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { AuthRequestDto } from '@auth/dto/auth-request.dto';
 import { PrismaService } from '@prisma/prisma.service';
+import { Role, User } from '@prisma-client';
 
 @Injectable()
 export class UserService {
@@ -47,5 +48,15 @@ export class UserService {
             },
             data: { isVerified: true }
         });
+    }
+
+    createDto(user: User & { role: Role }) {
+        const { id, email, isVerified, role } = user;
+        return { id, email, isVerified, role };
+    }
+
+    async getDtoById(userId: number) {
+        const user = await this.getById(userId);
+        return { user: this.createDto(user) };
     }
 }

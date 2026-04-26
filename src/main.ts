@@ -24,7 +24,7 @@ async function bootstrap() {
     app.setGlobalPrefix('api');
 
     const swaggerConfig = new DocumentBuilder()
-        .setTitle('Photodel API documentation')
+        .setTitle('Taekwondo Federation API documentation')
         .setVersion('1.0')
         .addBearerAuth()
         .build();

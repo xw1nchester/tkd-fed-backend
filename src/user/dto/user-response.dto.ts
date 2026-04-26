@@ -21,3 +21,8 @@ export class UserResponseDto {
     @ApiProperty({ type: RoleDto })
     role: RoleDto;
 }
+
+export class UserWrapperResponseDto {
+    @ApiProperty({ type: UserResponseDto })
+    user: UserResponseDto;
+}

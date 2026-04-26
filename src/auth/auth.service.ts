@@ -73,11 +73,6 @@ export class AuthService {
         };
     }
 
-    createDto(user: User & { role: Role }) {
-        const { id, email, isVerified, role } = user;
-        return { id, email, isVerified, role };
-    }
-
     async register(dto: AuthRequestDto, userAgent: string) {
         const existingUser = await this.userService.getByEmail(dto.email);
 
@@ -98,7 +93,7 @@ export class AuthService {
             code
         });
 
-        return { user: this.createDto(user), tokens };
+        return { user: this.userService.createDto(user), tokens };
     }
 
     async login(dto: AuthRequestDto, userAgent: string) {
@@ -115,7 +110,7 @@ export class AuthService {
 
         const tokens = await this.generateTokens(existingUser, userAgent);
 
-        return { user: this.createDto(existingUser), tokens };
+        return { user: this.userService.createDto(existingUser), tokens };
     }
 
     async refresh(token: string, userAgent: string) {

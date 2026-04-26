@@ -6,19 +6,17 @@ import {
     Get,
     HttpStatus,
     Post,
-    Res,
-    UseGuards
+    Res
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Token } from '@prisma-client';
 
 import { AuthService } from './auth.service';
-import { Cookie, CurrentUser, UserAgent } from './decorators';
+import { Cookie, CurrentUser, Public, UserAgent } from './decorators';
 import { AuthRequestDto } from './dto/auth-request.dto';
 import { JwtPayload } from './interfaces';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CodeRequestDto } from './dto/code-request.dto';
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { AuthResponseDto, TokenResponseDto } from './dto/auth-response.dto';
 
 const REFRESH_TOKEN = 'refresh-token';
@@ -42,6 +40,7 @@ export class AuthController {
         });
     }
 
+    @Public()
     @Post('register')
     @ApiCreatedResponse({ type: AuthResponseDto })
     async register(
@@ -59,6 +58,7 @@ export class AuthController {
         res.json({ user, accessToken: tokens.accessToken });
     }
 
+    @Public()
     @Post('login')
     @ApiCreatedResponse({ type: AuthResponseDto })
     async login(
@@ -73,6 +73,7 @@ export class AuthController {
         res.json({ user, accessToken: tokens.accessToken });
     }
 
+    @Public()
     @Get('refresh')
     @ApiOkResponse({ type: TokenResponseDto })
     async refresh(
@@ -87,6 +88,7 @@ export class AuthController {
         res.json({ accessToken: tokens.accessToken });
     }
 
+    @Public()
     @Get('logout')
     async logout(
         @Cookie(REFRESH_TOKEN) refreshToken: string,
@@ -99,16 +101,16 @@ export class AuthController {
         res.sendStatus(HttpStatus.OK);
     }
 
-    @UseGuards(JwtAuthGuard)
     @Get('resend-verification')
+    @ApiBearerAuth()
     async resendVerificationCode(@CurrentUser() user: JwtPayload) {
         await this.authService.resendVerificationCode(user.id);
 
         return HttpStatus.OK;
     }
 
-    @UseGuards(JwtAuthGuard)
     @Post('verify')
+    @ApiBearerAuth()
     async verify(
         @Body() { code }: CodeRequestDto,
         @CurrentUser() user: JwtPayload
