@@ -5,10 +5,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuthRequestDto } from '@auth/dto/auth-request.dto';
 import { PrismaService } from '@prisma/prisma.service';
 import { Role, User } from '@prisma-client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
-    constructor(private readonly prismaService: PrismaService) {}
+    constructor(
+        private readonly prismaService: PrismaService,
+        private readonly configService: ConfigService
+    ) {}
 
     async getById(id: number) {
         const user = await this.prismaService.user.findFirst({
@@ -51,12 +55,32 @@ export class UserService {
     }
 
     createDto(user: User & { role: Role }) {
-        const { id, email, isVerified, role } = user;
-        return { id, email, isVerified, role };
+        const { id, email, avatarKey, isVerified, role } = user;
+        const staticUrl = this.configService.get('STATIC_URL');
+        const avatar = avatarKey ? `${staticUrl}/${avatarKey}` : null;
+        return { id, email, avatar, isVerified, role };
     }
 
-    async getDtoById(userId: number) {
-        const user = await this.getById(userId);
+    async getDtoById(id: number) {
+        const user = await this.getById(id);
         return { user: this.createDto(user) };
+    }
+
+    async updateAvatar(id: number, avatarKey: string) {
+        await this.getById(id);
+        await this.prismaService.user.update({
+            where: { id },
+            data: { avatarKey }
+        });
+        return await this.getDtoById(id);
+    }
+
+    async deleteAvatar(id: number) {
+        await this.getById(id);
+        await this.prismaService.user.update({
+            where: { id },
+            data: { avatarKey: null }
+        });
+        return await this.getDtoById(id);
     }
 }

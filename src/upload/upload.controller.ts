@@ -51,6 +51,7 @@ export class UploadController {
 
         return {
             files: files.map(({ filename, originalname, mimetype, size }) => ({
+                key: filename,
                 url: `${staticUrl}/${filename}`,
                 name: originalname,
                 type: mimetype,

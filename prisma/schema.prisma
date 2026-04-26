@@ -5,13 +5,13 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+    provider = "prisma-client"
+    output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model Role {
@@ -35,7 +35,7 @@ model Token {
 model Code {
     id         Int      @id @default(autoincrement())
     code       String
-    retryDate DateTime @map("retry_date")
+    retryDate  DateTime @map("retry_date")
     expiryDate DateTime @map("expiry_date")
     user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId     Int      @map("user_id")
@@ -46,15 +46,15 @@ model Code {
 model User {
     id         Int      @id @default(autoincrement())
     email      String   @unique
-    password   String
+    avatarKey  String?   @map("avatar_key")
+    password   String?
     isVerified Boolean  @default(false) @map("is_verified")
     createdAt  DateTime @default(now()) @map("created_at")
     updatedAt  DateTime @updatedAt @map("updated_at")
-    role       Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
-    roleId     Int?      @map("role_id")
+    role       Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+    roleId     Int?     @map("role_id")
     tokens     Token[]
     codes      Code[]
 
     @@map("users")
 }
-
