@@ -28,7 +28,9 @@
             "@mail": ["src/mail"],
             "@mail/*": ["src/mail/*"],
             "@code": ["src/code"],
-            "@code/*": ["src/code/*"]
+            "@code/*": ["src/code/*"],
+            "@shared": ["src/shared"],
+            "@shared/*": ["src/shared/*"]
         }
     }
 }

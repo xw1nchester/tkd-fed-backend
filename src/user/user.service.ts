@@ -4,8 +4,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { AuthRequestDto } from '@auth/dto/auth-request.dto';
 import { PrismaService } from '@prisma/prisma.service';
-import { Role, User } from '@prisma-client';
+import { Prisma, Role, User } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
+import { BasicProfileRequestDto } from './dto/basic-profile-request.dto';
+import { SearchQueryDto } from './dto/search-query.dto';
+import { PaginationDto } from '@shared/dto/pagination.dto';
 
 @Injectable()
 export class UserService {
@@ -17,7 +20,7 @@ export class UserService {
     async getById(id: number) {
         const user = await this.prismaService.user.findFirst({
             where: { id },
-            include: { role: true }
+            include: { roles: true }
         });
 
         if (!user) {
@@ -30,7 +33,7 @@ export class UserService {
     async getByEmail(email: string) {
         return await this.prismaService.user.findFirst({
             where: { email },
-            include: { role: true }
+            include: { roles: true }
         });
     }
 
@@ -54,11 +57,21 @@ export class UserService {
         });
     }
 
-    createDto(user: User & { role: Role }) {
-        const { id, email, avatarKey, isVerified, role } = user;
+    createDto(user: User & { roles: Role[] }) {
         const staticUrl = this.configService.get('STATIC_URL');
-        const avatar = avatarKey ? `${staticUrl}/${avatarKey}` : null;
-        return { id, email, avatar, isVerified, role };
+        const avatar = user.avatarKey ? `${staticUrl}/${user.avatarKey}` : null;
+
+        return {
+            id: user.id,
+            email: user.email,
+            avatar,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            middleName: user.middleName,
+            birthDate: user.birthDate,
+            isVerified: user.isVerified,
+            roles: user.roles
+        };
     }
 
     async getDtoById(id: number) {
@@ -68,19 +81,87 @@ export class UserService {
 
     async updateAvatar(id: number, avatarKey: string) {
         await this.getById(id);
+
         await this.prismaService.user.update({
             where: { id },
             data: { avatarKey }
         });
+
         return await this.getDtoById(id);
     }
 
     async deleteAvatar(id: number) {
         await this.getById(id);
+
         await this.prismaService.user.update({
             where: { id },
             data: { avatarKey: null }
         });
+
         return await this.getDtoById(id);
+    }
+
+    async updateBasicProfileInfo(id: number, dto: BasicProfileRequestDto) {
+        await this.getById(id);
+
+        await this.prismaService.user.update({
+            where: { id },
+            data: {
+                firstName: dto.firstName,
+                lastName: dto.lastName,
+                middleName: dto.middleName,
+                birthDate: new Date(dto.birthDate)
+            }
+        });
+
+        return await this.getDtoById(id);
+    }
+
+    async findAll({ page, limit, search }: SearchQueryDto) {
+        const skip = (page - 1) * limit;
+
+        const where: Prisma.UserWhereInput = {
+            roles: {
+                none: {}
+            },
+            ...(!!search && {
+                OR: [
+                    {
+                        firstName: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    },
+                    {
+                        lastName: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    },
+                    {
+                        middleName: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    }
+                ]
+            })
+        };
+
+        const data = await this.prismaService.user.findMany({
+            where,
+            include: { roles: true },
+            orderBy: { createdAt: 'desc' },
+            take: limit,
+            skip
+        });
+
+        const totalCount = await this.prismaService.user.count({
+            where
+        });
+
+        const dtos = data.map(u => this.createDto(u));
+
+        return new PaginationDto(dtos, totalCount, page, limit);
     }
 }

@@ -29,3 +29,9 @@ Access Swagger API documentation:
 ```bash
 http://localhost:8080/api-docs
 ```
+
+Assigning roles to users:
+```sql
+INSERT INTO "_RoleToUser" ("A", "B")
+VALUES (<ROLE_ID>, <USER_ID>);
+```

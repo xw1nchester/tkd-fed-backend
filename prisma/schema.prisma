@@ -44,15 +44,18 @@ model Code {
 }
 
 model User {
-    id         Int      @id @default(autoincrement())
-    email      String   @unique
+    id         Int       @id @default(autoincrement())
+    email      String    @unique
     avatarKey  String?   @map("avatar_key")
+    firstName  String?   @map("first_name")
+    lastName   String?   @map("last_name")
+    middleName String?   @map("middle_name")
+    birthDate  DateTime? @map("birth_date")
     password   String?
-    isVerified Boolean  @default(false) @map("is_verified")
-    createdAt  DateTime @default(now()) @map("created_at")
-    updatedAt  DateTime @updatedAt @map("updated_at")
-    role       Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
-    roleId     Int?     @map("role_id")
+    isVerified Boolean   @default(false) @map("is_verified")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+    roles      Role[]
     tokens     Token[]
     codes      Code[]
 

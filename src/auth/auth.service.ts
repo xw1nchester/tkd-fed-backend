@@ -56,13 +56,15 @@ export class AuthService {
     }
 
     private async generateTokens(
-        user: User & { role: Role },
+        user: User & { roles: Role[] },
         userAgent: string
     ) {
+        const roles = user.roles.map(r => r.name);
+
         const accessToken = this.jwtService.sign({
             id: user.id,
             email: user.email,
-            role: user.role?.name || null
+            roles
         });
 
         const refreshToken = await this.getRefreshToken(user.id, userAgent);
