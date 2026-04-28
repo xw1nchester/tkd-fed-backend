@@ -117,13 +117,22 @@ export class UserService {
         return await this.getDtoById(id);
     }
 
-    async findAll({ page, limit, search }: SearchQueryDto) {
+    async findAll({
+        query,
+        onlyWithoutRoles = true
+    }: {
+        query: SearchQueryDto;
+        onlyWithoutRoles?: boolean;
+    }) {
+        const { page, limit, search } = query;
         const skip = (page - 1) * limit;
 
         const where: Prisma.UserWhereInput = {
-            roles: {
-                none: {}
-            },
+            ...(onlyWithoutRoles && {
+                roles: {
+                    none: {}
+                }
+            }),
             ...(!!search && {
                 OR: [
                     {

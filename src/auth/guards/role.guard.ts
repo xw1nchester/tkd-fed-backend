@@ -17,7 +17,9 @@ export class RoleGuard implements CanActivate {
     ): boolean | Promise<boolean> | Observable<boolean> {
         const request = ctx.switchToHttp().getRequest();
         const user = request.user as JwtPayload;
-        const requiredRole = this.reflector.get(Role, ctx.getHandler());
+        const requiredRole =
+            this.reflector.get(Role, ctx.getHandler()) ??
+            this.reflector.get(Role, ctx.getClass());
 
         return user.roles.includes(requiredRole);
     }

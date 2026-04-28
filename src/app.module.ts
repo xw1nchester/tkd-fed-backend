@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { UploadModule } from './upload/upload.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
     imports: [
@@ -25,7 +26,8 @@ import { UploadModule } from './upload/upload.module';
         UserModule,
         MailModule,
         CodeModule,
-        UploadModule
+        UploadModule,
+        AdminModule
     ],
     controllers: [AppController],
     providers: [

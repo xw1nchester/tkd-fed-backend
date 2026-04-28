@@ -12,8 +12,16 @@ import {
 import { UserService } from './user.service';
 import { CurrentUser } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import { UserResponseDto, UserWrapperResponseDto } from './dto/user-response.dto';
+import {
+    ApiBearerAuth,
+    ApiExtraModels,
+    ApiOkResponse,
+    getSchemaPath
+} from '@nestjs/swagger';
+import {
+    UserResponseDto,
+    UserWrapperResponseDto
+} from './dto/user-response.dto';
 import { AvatarRequestDto } from './dto/avatar-request.dto';
 import { BasicProfileRequestDto } from './dto/basic-profile-request.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
@@ -82,6 +90,6 @@ export class UserController {
         }
     })
     async findAll(@Query() query: SearchQueryDto) {
-        return await this.userService.findAll(query);
+        return await this.userService.findAll({ query });
     }
 }

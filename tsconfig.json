@@ -30,7 +30,9 @@
             "@code": ["src/code"],
             "@code/*": ["src/code/*"],
             "@shared": ["src/shared"],
-            "@shared/*": ["src/shared/*"]
+            "@shared/*": ["src/shared/*"],
+            "@admin": ["src/admin"],
+            "@admin/*": ["src/admin/*"]
         }
     }
 }
