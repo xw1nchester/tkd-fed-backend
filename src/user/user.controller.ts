@@ -23,7 +23,7 @@ import {
     UserWrapperResponseDto
 } from './dto/user-response.dto';
 import { AvatarRequestDto } from './dto/avatar-request.dto';
-import { BasicProfileRequestDto } from './dto/basic-profile-request.dto';
+import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 
@@ -67,9 +67,9 @@ export class UserController {
     @ApiOkResponse({ type: UserWrapperResponseDto })
     async updateBasicProfileInfo(
         @CurrentUser() user: JwtPayload,
-        @Body() dto: BasicProfileRequestDto
+        @Body() dto: BasicUserEditRequestDto
     ) {
-        return await this.userService.updateBasicProfileInfo(user.id, dto);
+        return await this.userService.updateBasicUserInfo(user.id, dto);
     }
 
     @Public()

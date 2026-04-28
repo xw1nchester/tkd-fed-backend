@@ -1,14 +1,20 @@
 import { genSaltSync, hashSync } from 'bcrypt';
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 
 import { AuthRequestDto } from '@auth/dto/auth-request.dto';
 import { PrismaService } from '@prisma/prisma.service';
 import { Prisma, Role, User } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
-import { BasicProfileRequestDto } from './dto/basic-profile-request.dto';
+import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
+import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
+import { RoleEnum } from '@shared/enums/role.enum';
 
 @Injectable()
 export class UserService {
@@ -24,7 +30,7 @@ export class UserService {
         });
 
         if (!user) {
-            throw new NotFoundException('');
+            throw new NotFoundException('Пользователь не найден');
         }
 
         return user;
@@ -101,7 +107,7 @@ export class UserService {
         return await this.getDtoById(id);
     }
 
-    async updateBasicProfileInfo(id: number, dto: BasicProfileRequestDto) {
+    async updateBasicUserInfo(id: number, dto: BasicUserEditRequestDto) {
         await this.getById(id);
 
         await this.prismaService.user.update({
@@ -115,6 +121,57 @@ export class UserService {
         });
 
         return await this.getDtoById(id);
+    }
+
+    async updateUserInfo(id: number, dto: UserEditRequestDto) {
+        await this.getById(id);
+
+        const roles = await this.prismaService.role.findMany({
+            where: {
+                id: { in: dto.roleIds }
+            },
+            select: { id: true }
+        });
+
+        const foundIds = roles.map(r => r.id);
+
+        if (foundIds.length !== dto.roleIds.length) {
+            throw new NotFoundException('Роль не найдена');
+        }
+
+        await this.prismaService.user.update({
+            where: { id },
+            data: {
+                email: dto.email,
+                isVerified: dto.isVerified,
+                firstName: dto.firstName,
+                lastName: dto.lastName,
+                middleName: dto.middleName,
+                birthDate: new Date(dto.birthDate),
+                roles: {
+                    set: dto.roleIds.map(id => ({ id }))
+                }
+            }
+        });
+
+        return await this.getDtoById(id);
+    }
+
+    async deleteUser(id: number, adminId: number) {
+        const dto = await this.getDtoById(id);
+
+        if (
+            id == adminId ||
+            dto.user.roles.some(r => r.name == RoleEnum.ADMIN)
+        ) {
+            throw new BadRequestException(
+                'Нельзя выполнить это действие для данного пользователя'
+            );
+        }
+
+        await this.prismaService.user.delete({ where: { id } });
+
+        return dto;
     }
 
     async findAll({
