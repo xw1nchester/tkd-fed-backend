@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
-import { CurrentUser } from '@auth/decorators';
+import { CurrentUser, Public } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
 import {
     ApiBearerAuth,
@@ -72,6 +72,7 @@ export class UserController {
         return await this.userService.updateBasicProfileInfo(user.id, dto);
     }
 
+    @Public()
     @Get()
     @ApiExtraModels(PaginationResponseDto, UserResponseDto)
     @ApiOkResponse({
