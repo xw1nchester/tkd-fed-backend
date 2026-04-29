@@ -1,15 +1,20 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsOptional, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+    IsDateString,
+    IsNotEmpty,
+    IsOptional,
+    IsString
+} from 'class-validator';
 
 export class BasicUserEditRequestDto {
     @ApiProperty({ example: 'Дружков' })
     @IsString()
-    @IsOptional()
+    @IsNotEmpty()
     lastName: string;
 
     @ApiProperty({ example: 'Василий' })
     @IsString()
-    @IsOptional()
+    @IsNotEmpty()
     firstName: string;
 
     @ApiProperty({ example: 'Александрович' })

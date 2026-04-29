@@ -13,11 +13,12 @@ import { Token } from '@prisma-client';
 
 import { AuthService } from './auth.service';
 import { Cookie, CurrentUser, Public, UserAgent } from './decorators';
-import { AuthRequestDto } from './dto/auth-request.dto';
+import { LoginRequestDto } from './dto/login-request.dto';
 import { JwtPayload } from './interfaces';
 import { CodeRequestDto } from './dto/code-request.dto';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { AuthResponseDto, TokenResponseDto } from './dto/auth-response.dto';
+import { RegisterRequestDto } from './dto/register-request.dto';
 
 const REFRESH_TOKEN = 'refresh-token';
 
@@ -44,7 +45,7 @@ export class AuthController {
     @Post('register')
     @ApiCreatedResponse({ type: AuthResponseDto })
     async register(
-        @Body() dto: AuthRequestDto,
+        @Body() dto: RegisterRequestDto,
         @UserAgent() userAgent: string,
         @Res() res: Response
     ) {
@@ -62,7 +63,7 @@ export class AuthController {
     @Post('login')
     @ApiCreatedResponse({ type: AuthResponseDto })
     async login(
-        @Body() dto: AuthRequestDto,
+        @Body() dto: LoginRequestDto,
         @UserAgent() userAgent: string,
         @Res() res: Response
     ) {

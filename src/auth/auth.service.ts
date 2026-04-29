@@ -14,7 +14,8 @@ import { Role, User } from '@prisma-client';
 import { PrismaService } from '@prisma/prisma.service';
 import { UserService } from '@user/user.service';
 
-import { AuthRequestDto } from './dto/auth-request.dto';
+import { LoginRequestDto } from './dto/login-request.dto';
+import { RegisterRequestDto } from './dto/register-request.dto';
 
 @Injectable()
 export class AuthService {
@@ -75,7 +76,7 @@ export class AuthService {
         };
     }
 
-    async register(dto: AuthRequestDto, userAgent: string) {
+    async register(dto: RegisterRequestDto, userAgent: string) {
         const existingUser = await this.userService.getByEmail(dto.email);
 
         if (existingUser) {
@@ -98,7 +99,7 @@ export class AuthService {
         return { user: this.userService.createDto(user), tokens };
     }
 
-    async login(dto: AuthRequestDto, userAgent: string) {
+    async login(dto: LoginRequestDto, userAgent: string) {
         const existingUser = await this.userService.getByEmail(dto.email);
 
         if (

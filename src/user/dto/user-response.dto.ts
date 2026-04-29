@@ -16,10 +16,15 @@ export class UserResponseDto {
     email: string;
 
     @ApiProperty({
+        example: '64c43ba9-b062-4875-a989-291948999b4e.jpeg'
+    })
+    avatarKey: string;
+
+    @ApiProperty({
         example:
             'http://localhost:8080/static/64c43ba9-b062-4875-a989-291948999b4e.jpeg'
     })
-    avatar: string;
+    avatarUrl: string;
 
     @ApiProperty({ example: 'Дружков' })
     lastName: string;

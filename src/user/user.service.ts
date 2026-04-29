@@ -6,7 +6,6 @@ import {
     NotFoundException
 } from '@nestjs/common';
 
-import { AuthRequestDto } from '@auth/dto/auth-request.dto';
 import { PrismaService } from '@prisma/prisma.service';
 import { Prisma, Role, User } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
@@ -15,6 +14,7 @@ import { SearchQueryDto } from './dto/search-query.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
 import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
+import { RegisterRequestDto } from '@auth/dto/register-request.dto';
 
 @Injectable()
 export class UserService {
@@ -43,10 +43,19 @@ export class UserService {
         });
     }
 
-    async create({ email, password }: AuthRequestDto) {
+    async create({
+        email,
+        firstName,
+        lastName,
+        middleName,
+        password
+    }: RegisterRequestDto) {
         const createdUser = await this.prismaService.user.create({
             data: {
                 email,
+                firstName,
+                lastName,
+                middleName,
                 password: hashSync(password, genSaltSync(10))
             }
         });
@@ -65,12 +74,15 @@ export class UserService {
 
     createDto(user: User & { roles: Role[] }) {
         const staticUrl = this.configService.get('STATIC_URL');
-        const avatar = user.avatarKey ? `${staticUrl}/${user.avatarKey}` : null;
+        const avatarUrl = user.avatarKey
+            ? `${staticUrl}/${user.avatarKey}`
+            : null;
 
         return {
             id: user.id,
             email: user.email,
-            avatar,
+            avatarKey: user.avatarKey,
+            avatarUrl,
             firstName: user.firstName,
             lastName: user.lastName,
             middleName: user.middleName,
