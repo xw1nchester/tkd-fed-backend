@@ -32,7 +32,9 @@
             "@shared": ["src/shared"],
             "@shared/*": ["src/shared/*"],
             "@admin": ["src/admin"],
-            "@admin/*": ["src/admin/*"]
+            "@admin/*": ["src/admin/*"],
+            "@role": ["src/role"],
+            "@role/*": ["src/role/*"]
         }
     }
 }

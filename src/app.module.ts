@@ -13,6 +13,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
+import { RoleService } from './role/role.service';
+import { RoleModule } from './role/role.module';
 
 @Module({
     imports: [
@@ -27,14 +29,16 @@ import { AdminModule } from './admin/admin.module';
         MailModule,
         CodeModule,
         UploadModule,
-        AdminModule
+        AdminModule,
+        RoleModule
     ],
     controllers: [AppController],
     providers: [
         {
             provide: APP_GUARD,
             useClass: JwtAuthGuard
-        }
+        },
+        RoleService
     ]
 })
 export class AppModule {}
