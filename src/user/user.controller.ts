@@ -38,6 +38,7 @@ export class UserController {
         return await this.userService.getDtoById(user.id);
     }
 
+    @Public()
     @Get(':id')
     @ApiBearerAuth()
     @ApiOkResponse({ type: UserWrapperResponseDto })

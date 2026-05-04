@@ -57,7 +57,7 @@ export class UserController {
     async findAll(@Query() query: SearchQueryDto) {
         return await this.userService.findAll({
             query,
-            onlyWithoutRoles: false
+            excludeAdmins: false
         });
     }
 

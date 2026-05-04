@@ -44,20 +44,23 @@ model Code {
 }
 
 model User {
-    id         Int       @id @default(autoincrement())
-    email      String    @unique
-    avatarKey  String?   @map("avatar_key")
-    firstName  String?   @map("first_name")
-    lastName   String?   @map("last_name")
-    middleName String?   @map("middle_name")
-    birthDate  DateTime? @map("birth_date")
-    password   String?
-    isVerified Boolean   @default(false) @map("is_verified")
-    createdAt  DateTime  @default(now()) @map("created_at")
-    updatedAt  DateTime  @updatedAt @map("updated_at")
-    roles      Role[]
-    tokens     Token[]
-    codes      Code[]
+    id           Int       @id @default(autoincrement())
+    email        String    @unique
+    avatarKey    String?   @map("avatar_key")
+    firstName    String?   @map("first_name")
+    lastName     String?   @map("last_name")
+    middleName   String?   @map("middle_name")
+    birthDate    DateTime? @map("birth_date")
+    password     String?
+    isVerified   Boolean   @default(false) @map("is_verified")
+    createdAt    DateTime  @default(now()) @map("created_at")
+    updatedAt    DateTime  @updatedAt @map("updated_at")
+    roles        Role[]
+    tokens       Token[]
+    codes        Code[]
+    invitedById  Int?      @map("invited_by_id")
+    invitedBy    User?     @relation("UserInvitations", fields: [invitedById], references: [id])
+    invitedUsers User[]    @relation("UserInvitations")
 
     @@map("users")
 }

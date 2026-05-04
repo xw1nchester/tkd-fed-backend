@@ -4,7 +4,8 @@ import { v4 } from 'uuid';
 import {
     Injectable,
     BadRequestException,
-    UnauthorizedException
+    UnauthorizedException,
+    NotFoundException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
@@ -16,6 +17,7 @@ import { UserService } from '@user/user.service';
 
 import { LoginRequestDto } from './dto/login-request.dto';
 import { RegisterRequestDto } from './dto/register-request.dto';
+import { RoleEnum } from '@shared/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -76,6 +78,7 @@ export class AuthService {
         };
     }
 
+    // TODO: transaction
     async register(dto: RegisterRequestDto, userAgent: string) {
         const existingUser = await this.userService.getByEmail(dto.email);
 
@@ -83,6 +86,17 @@ export class AuthService {
             throw new BadRequestException(
                 'Пользователь с таким email уже зарегистрирован'
             );
+        }
+
+        if (dto.inviterId != undefined) {
+            const inviter = await this.userService.getById(dto.inviterId);
+
+            if (
+                !inviter ||
+                !inviter.roles.find(r => r.name == RoleEnum.TRAINER)
+            ) {
+                throw new NotFoundException('Пользователь не найден');
+            }
         }
 
         const user = await this.userService.create(dto);

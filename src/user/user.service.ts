@@ -48,7 +48,9 @@ export class UserService {
         firstName,
         lastName,
         middleName,
-        password
+        birthDate,
+        password,
+        inviterId
     }: RegisterRequestDto) {
         const createdUser = await this.prismaService.user.create({
             data: {
@@ -56,7 +58,9 @@ export class UserService {
                 firstName,
                 lastName,
                 middleName,
-                password: hashSync(password, genSaltSync(10))
+                birthDate: new Date(birthDate),
+                password: hashSync(password, genSaltSync(10)),
+                invitedById: inviterId
             }
         });
 
@@ -188,18 +192,20 @@ export class UserService {
 
     async findAll({
         query,
-        onlyWithoutRoles = true
+        excludeAdmins = true
     }: {
         query: SearchQueryDto;
-        onlyWithoutRoles?: boolean;
+        excludeAdmins?: boolean;
     }) {
         const { page, limit, search } = query;
         const skip = (page - 1) * limit;
 
         const where: Prisma.UserWhereInput = {
-            ...(onlyWithoutRoles && {
+            ...(excludeAdmins && {
                 roles: {
-                    none: {}
+                    none: {
+                        name: RoleEnum.ADMIN
+                    }
                 }
             }),
             ...(!!search && {

@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+    IsDateString,
+    IsEmail,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+    MinLength
+} from 'class-validator';
 
 export class RegisterRequestDto {
     @ApiProperty({ example: 'user@example.com' })
@@ -12,7 +20,7 @@ export class RegisterRequestDto {
     @IsString()
     @IsNotEmpty()
     lastName: string;
-    
+
     @ApiProperty({ example: 'Василий' })
     @IsString()
     @IsNotEmpty()
@@ -23,8 +31,17 @@ export class RegisterRequestDto {
     @IsOptional()
     middleName: string;
 
+    @ApiProperty({ example: '2024-06-01' })
+    @IsDateString()
+    birthDate: string;
+
     @ApiProperty({ example: 'StrongPass123!', minLength: 8 })
     @IsString()
     @MinLength(8)
     password: string;
+
+    @Transform(({ value }) => Number(value))
+    @IsNumber()
+    @IsOptional()
+    inviterId: number;
 }
