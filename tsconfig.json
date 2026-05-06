@@ -34,7 +34,9 @@
             "@admin": ["src/admin"],
             "@admin/*": ["src/admin/*"],
             "@role": ["src/role"],
-            "@role/*": ["src/role/*"]
+            "@role/*": ["src/role/*"],
+            "@invite-token": ["src/invite-token"],
+            "@invite-token/*": ["src/invite-token/*"]
         }
     }
 }

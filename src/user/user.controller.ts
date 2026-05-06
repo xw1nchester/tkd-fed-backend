@@ -6,11 +6,12 @@ import {
     Param,
     ParseIntPipe,
     Patch,
-    Query
+    Query,
+    UseGuards
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
-import { CurrentUser, Public } from '@auth/decorators';
+import { CurrentUser, Public, Role } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
 import {
     ApiBearerAuth,
@@ -26,6 +27,8 @@ import { AvatarRequestDto } from './dto/avatar-request.dto';
 import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
+import { RoleGuard } from '@auth/guards/role.guard';
+import { RoleEnum } from '@shared/enums/role.enum';
 
 @Controller('user')
 export class UserController {
@@ -93,5 +96,32 @@ export class UserController {
     })
     async findAll(@Query() query: SearchQueryDto) {
         return await this.userService.findAll({ query });
+    }
+
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER)
+    @Get('me/invited-users')
+    @ApiBearerAuth()
+    @ApiExtraModels(PaginationResponseDto, UserResponseDto)
+    @ApiOkResponse({
+        schema: {
+            allOf: [
+                {
+                    properties: {
+                        data: {
+                            type: 'array',
+                            items: { $ref: getSchemaPath(UserResponseDto) }
+                        }
+                    }
+                },
+                { $ref: getSchemaPath(PaginationResponseDto) }
+            ]
+        }
+    })
+    async findInvitedUsers(
+        @Query() query: SearchQueryDto,
+        @CurrentUser() user: JwtPayload
+    ) {
+        return await this.userService.findAll({ query, invitedById: user.id });
     }
 }

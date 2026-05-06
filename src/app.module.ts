@@ -15,6 +15,8 @@ import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
 import { RoleService } from './role/role.service';
 import { RoleModule } from './role/role.module';
+import { InviteTokenModule } from './invite-token/invite-token.module';
+import { TeamModule } from './team/team.module';
 
 @Module({
     imports: [
@@ -30,7 +32,9 @@ import { RoleModule } from './role/role.module';
         CodeModule,
         UploadModule,
         AdminModule,
-        RoleModule
+        RoleModule,
+        InviteTokenModule,
+        TeamModule
     ],
     controllers: [AppController],
     providers: [

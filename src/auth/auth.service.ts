@@ -17,7 +17,7 @@ import { UserService } from '@user/user.service';
 
 import { LoginRequestDto } from './dto/login-request.dto';
 import { RegisterRequestDto } from './dto/register-request.dto';
-import { RoleEnum } from '@shared/enums/role.enum';
+import { InviteTokenService } from '@invite-token/invite-token.service';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +26,8 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
         private readonly codeService: CodeService,
-        private readonly mailService: MailService
+        private readonly mailService: MailService,
+        private readonly inviteTokenService: InviteTokenService,
     ) {}
 
     private async getRefreshToken(userId: number, userAgent: string) {
@@ -88,18 +89,19 @@ export class AuthService {
             );
         }
 
-        if (dto.inviterId != undefined) {
-            const inviter = await this.userService.getById(dto.inviterId);
+        let inviterId: number;
 
-            if (
-                !inviter ||
-                !inviter.roles.find(r => r.name == RoleEnum.TRAINER)
-            ) {
-                throw new NotFoundException('Пользователь не найден');
+        if (dto.inviteToken != undefined) {
+            const inviteToken = await this.inviteTokenService.getByToken(dto.inviteToken);
+
+            if(!inviteToken) {
+                throw new NotFoundException('Ссылка для приглашения недействительна');
             }
+
+            inviterId = inviteToken.creatorId;
         }
 
-        const user = await this.userService.create(dto);
+        const user = await this.userService.create(dto, inviterId);
 
         const tokens = await this.generateTokens(user, userAgent);
 

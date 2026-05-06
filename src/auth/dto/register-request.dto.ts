@@ -4,7 +4,6 @@ import {
     IsDateString,
     IsEmail,
     IsNotEmpty,
-    IsNumber,
     IsOptional,
     IsString,
     MinLength
@@ -40,8 +39,8 @@ export class RegisterRequestDto {
     @MinLength(8)
     password: string;
 
-    @Transform(({ value }) => Number(value))
-    @IsNumber()
+    @ApiProperty({ example: 'e7cb06e8-1335-4b5c-bb46-0edfd4015aa1' })
+    @IsString()
     @IsOptional()
-    inviterId: number;
+    inviteToken: string;
 }

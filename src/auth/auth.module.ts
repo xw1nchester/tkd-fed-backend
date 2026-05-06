@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { options } from './config';
 import { GUARDS } from './guards';
 import { STRATEGIES } from './strategies';
+import { InviteTokenModule } from '@invite-token/invite-token.module';
 
 
 @Module({
@@ -20,7 +21,8 @@ import { STRATEGIES } from './strategies';
         JwtModule.registerAsync(options()),
         UserModule,
         CodeModule,
-        MailModule
+        MailModule,
+        InviteTokenModule,
     ],
     controllers: [AuthController],
     providers: [AuthService, ...STRATEGIES, ...GUARDS]

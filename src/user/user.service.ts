@@ -43,15 +43,18 @@ export class UserService {
         });
     }
 
-    async create({
-        email,
-        firstName,
-        lastName,
-        middleName,
-        birthDate,
-        password,
-        inviterId
-    }: RegisterRequestDto) {
+    // TODO: создать отдельное dto
+    async create(
+        {
+            email,
+            firstName,
+            lastName,
+            middleName,
+            birthDate,
+            password
+        }: RegisterRequestDto,
+        inviterId: number
+    ) {
         const createdUser = await this.prismaService.user.create({
             data: {
                 email,
@@ -192,10 +195,12 @@ export class UserService {
 
     async findAll({
         query,
-        excludeAdmins = true
+        excludeAdmins = true,
+        invitedById
     }: {
         query: SearchQueryDto;
         excludeAdmins?: boolean;
+        invitedById?: number;
     }) {
         const { page, limit, search } = query;
         const skip = (page - 1) * limit;
@@ -229,6 +234,9 @@ export class UserService {
                         }
                     }
                 ]
+            }),
+            ...(invitedById && {
+                invitedById
             })
         };
 
@@ -247,5 +255,15 @@ export class UserService {
         const dtos = data.map(u => this.createDto(u));
 
         return new PaginationDto(dtos, totalCount, page, limit);
+    }
+
+    async validateInvitedUserIds(invitedById: number, userIds: number[]) {
+        const users = await this.prismaService.user.findMany({
+            where: { invitedById, id: { in: userIds } }
+        });
+
+        if (userIds.length != users.length) {
+            throw new NotFoundException('Пользователь не найден');
+        }
     }
 }
