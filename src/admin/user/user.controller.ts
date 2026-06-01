@@ -20,7 +20,6 @@ import {
 } from '@nestjs/swagger';
 import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
-import { SearchQueryDto } from '@user/dto/search-query.dto';
 import {
     UserResponseDto,
     UserWrapperResponseDto
@@ -29,6 +28,7 @@ import { UserService } from '@user/user.service';
 import { UserEditRequestDto } from './dto/user-edit-request.dto';
 import { AvatarRequestDto } from '@user/dto/avatar-request.dto';
 import { JwtPayload } from '@auth/interfaces';
+import { AdminUserQueryDto } from './dto/admin-user-query.dto';
 
 @ApiTags('Admin')
 @UseGuards(RoleGuard)
@@ -54,7 +54,7 @@ export class UserController {
             ]
         }
     })
-    async findAll(@Query() query: SearchQueryDto) {
+    async findAll(@Query() query: AdminUserQueryDto) {
         return await this.userService.findAll({
             query,
             excludeAdmins: false
@@ -74,8 +74,8 @@ export class UserController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOkResponse({ type: UserWrapperResponseDto })
-    async deleteUser(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: JwtPayload) {
-        return await this.userService.deleteUser(id, user.id);
+    async removeUser(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: JwtPayload) {
+        return await this.userService.removeUser(id, user.id);
     }
 
     @Patch(':id/avatar')

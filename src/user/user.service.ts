@@ -10,11 +10,11 @@ import { PrismaService } from '@prisma/prisma.service';
 import { Prisma, Role, User } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
 import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
-import { SearchQueryDto } from './dto/search-query.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
 import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
 import { RegisterRequestDto } from '@auth/dto/register-request.dto';
+import { AdminUserQueryDto } from '@admin/user/dto/admin-user-query.dto';
 
 @Injectable()
 export class UserService {
@@ -176,7 +176,7 @@ export class UserService {
         return await this.getDtoById(id);
     }
 
-    async deleteUser(id: number, adminId: number) {
+    async removeUser(id: number, adminId: number) {
         const dto = await this.getDtoById(id);
 
         if (
@@ -198,11 +198,11 @@ export class UserService {
         excludeAdmins = true,
         invitedById
     }: {
-        query: SearchQueryDto;
+        query: Partial<AdminUserQueryDto>;
         excludeAdmins?: boolean;
         invitedById?: number;
     }) {
-        const { page, limit, search } = query;
+        const { page, limit, search, teamId, roleId } = query;
         const skip = (page - 1) * limit;
 
         const where: Prisma.UserWhereInput = {
@@ -237,6 +237,20 @@ export class UserService {
             }),
             ...(invitedById && {
                 invitedById
+            }),
+            ...(teamId && {
+                teams: {
+                    some: {
+                        id: teamId
+                    }
+                }
+            }),
+            ...(roleId && {
+                roles: {
+                    some: {
+                        id: roleId
+                    }
+                }
             })
         };
 

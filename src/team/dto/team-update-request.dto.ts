@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class TeamRequestDto {
+export class TeamUpdateRequestDto {
     @ApiProperty({ example: 'Старшая группа' })
     @IsString()
     @IsNotEmpty()
@@ -12,9 +11,4 @@ export class TeamRequestDto {
     @IsString()
     @IsOptional()
     logoKey: string;
-
-    @ApiProperty({ example: [1, 2] })
-    @IsArray()
-    @Transform(({ value }) => [...new Set(value)])
-    memberIds: number[];
 }

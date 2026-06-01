@@ -15,9 +15,10 @@ datasource db {
 }
 
 model Role {
-    id    Int    @id @default(autoincrement())
-    name  String
-    users User[]
+    id          Int     @id @default(autoincrement())
+    name        String
+    description String?
+    users       User[]
 
     @@map("roles")
 }
@@ -85,8 +86,8 @@ model Team {
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
-    creatorId Int  @map("creator_id")
-    creator   User @relation("TeamCreator", fields: [creatorId], references: [id])
+    creatorId Int?  @map("creator_id")
+    creator   User? @relation("TeamCreator", fields: [creatorId], references: [id])
 
     members User[]
 

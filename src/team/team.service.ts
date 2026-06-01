@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    ForbiddenException,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
-import { TeamRequestDto } from './dto/team-request.dto';
+import { TeamCreateRequestDto } from './dto/team-create-request.dto';
 import { UserService } from '@user/user.service';
 import { Prisma, Team } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
 import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
+import { TeamUpdateRequestDto } from './dto/team-update-request.dto';
 
 @Injectable()
 export class TeamService {
@@ -54,7 +59,7 @@ export class TeamService {
         return { team: this.createDto(team) };
     }
 
-    async create(dto: TeamRequestDto, creatorId: number) {
+    async create(dto: TeamCreateRequestDto, creatorId: number) {
         await this.userService.validateInvitedUserIds(creatorId, dto.memberIds);
 
         const createdTeam = await this.prismaService.team.create({
@@ -102,5 +107,81 @@ export class TeamService {
         const dtos = data.map(t => this.createDto(t));
 
         return new PaginationDto(dtos, totalCount, page, limit);
+    }
+
+    async update(id: number, creatorId: number, dto: TeamUpdateRequestDto) {
+        const existingTeam = await this.getById(id);
+
+        if (existingTeam.creatorId != creatorId) {
+            throw new ForbiddenException();
+        }
+
+        await this.prismaService.team.update({
+            where: { id },
+            data: {
+                name: dto.name,
+                logoKey: dto.logoKey
+            }
+        });
+
+        return await this.getDtoById(id);
+    }
+
+    async remove(id: number, creatorId: number) {
+        const existingTeam = await this.getById(id);
+
+        if (existingTeam.creatorId != creatorId) {
+            throw new ForbiddenException();
+        }
+
+        const dto = await this.getDtoById(id);
+
+        await this.prismaService.team.delete({ where: { id } });
+
+        return dto;
+    }
+
+    async addMembers(teamId: number, memberIds: number[], creatorId: number) {
+        const team = await this.getById(teamId);
+
+        if (team.creatorId !== creatorId) {
+            throw new ForbiddenException();
+        }
+
+        await this.userService.validateInvitedUserIds(creatorId, memberIds);
+
+        await this.prismaService.team.update({
+            where: {
+                id: teamId
+            },
+            data: {
+                members: {
+                    connect: memberIds.map(id => ({ id }))
+                }
+            }
+        });
+    }
+
+    async removeMembers(
+        teamId: number,
+        memberIds: number[],
+        creatorId: number
+    ) {
+        const team = await this.getById(teamId);
+
+        if (team.creatorId !== creatorId) {
+            throw new ForbiddenException();
+        }
+
+        await this.prismaService.team.update({
+            where: {
+                id: teamId
+            },
+            data: {
+                members: {
+                    disconnect: memberIds.map(id => ({ id }))
+                }
+            }
+        });
     }
 }

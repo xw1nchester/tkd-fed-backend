@@ -25,7 +25,7 @@ import {
 } from './dto/user-response.dto';
 import { AvatarRequestDto } from './dto/avatar-request.dto';
 import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
-import { SearchQueryDto } from './dto/search-query.dto';
+import { UserQueryDto } from './dto/user-query.dto';
 import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 import { RoleGuard } from '@auth/guards/role.guard';
 import { RoleEnum } from '@shared/enums/role.enum';
@@ -94,7 +94,7 @@ export class UserController {
             ]
         }
     })
-    async findAll(@Query() query: SearchQueryDto) {
+    async findAll(@Query() query: UserQueryDto) {
         return await this.userService.findAll({ query });
     }
 
@@ -119,7 +119,7 @@ export class UserController {
         }
     })
     async findInvitedUsers(
-        @Query() query: SearchQueryDto,
+        @Query() query: UserQueryDto,
         @CurrentUser() user: JwtPayload
     ) {
         return await this.userService.findAll({ query, invitedById: user.id });

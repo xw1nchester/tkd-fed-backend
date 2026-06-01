@@ -6,6 +6,9 @@ class RoleResponseDto {
 
     @ApiProperty({ example: 'admin' })
     name: string;
+
+    @ApiProperty({ example: 'Админ' })
+    description: string;
 }
 
 export class RolesResponseDto {
