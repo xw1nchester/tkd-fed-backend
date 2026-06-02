@@ -45,7 +45,7 @@ export class InviteTokenService {
     }
 
     async create({ token }: InviteTokenRequestDto, creatorId: number) {
-        const existingToken = this.getByToken(token);
+        const existingToken = await this.getByToken(token);
 
         if (existingToken) {
             throw new BadRequestException(

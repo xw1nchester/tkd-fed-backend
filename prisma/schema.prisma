@@ -93,3 +93,19 @@ model Team {
 
     @@map("teams")
 }
+
+enum BeltRankType {
+    GEUP
+    DAN
+}
+
+model Belt {
+    id          Int          @id @default(autoincrement())
+    name        String
+    color       String
+    stripeColor String       @map("stripe_color")
+    rankType    BeltRankType @map("rank_type")
+    rankNumber  Int          @map("rank_number")
+
+    @@map("belts")
+}
