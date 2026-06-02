@@ -38,6 +38,19 @@ export class InviteTokenService {
         return this.createDto(token);
     }
 
+    async getDtoByToken(value: string) {
+        const token = await this.prismaService.inviteToken.findFirst({
+            where: { token: value },
+            include: { creator: true }
+        });
+
+        if (!token) {
+            throw new NotFoundException('Ссылка для приглашения не найдена');
+        }
+
+        return this.createDto(token);
+    }
+
     async getByToken(token: string) {
         return await this.prismaService.inviteToken.findFirst({
             where: { token }

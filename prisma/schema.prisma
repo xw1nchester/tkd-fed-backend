@@ -65,6 +65,8 @@ model User {
     inviteTokens InviteToken[]
     teams        Team[]
     ownedTeams   Team[]        @relation("TeamCreator")
+    beltId       Int?          @map("belt_id")
+    belt         Belt?         @relation(fields: [beltId], references: [id])
 
     @@map("users")
 }
@@ -103,9 +105,11 @@ model Belt {
     id          Int          @id @default(autoincrement())
     name        String
     color       String
-    stripeColor String       @map("stripe_color")
+    stripeColor String?      @map("stripe_color")
     rankType    BeltRankType @map("rank_type")
     rankNumber  Int          @map("rank_number")
+    sortOrder   Int          @map("sort_order")
+    users       User[]
 
     @@map("belts")
 }

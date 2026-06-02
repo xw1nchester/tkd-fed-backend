@@ -17,7 +17,10 @@ import { RoleEnum } from '@shared/enums/role.enum';
 import { InviteTokenRequestDto } from './dto/token-request.dto';
 import { JwtPayload } from '@auth/interfaces';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
-import { InviteTokensWrapperResponseDto, InviteTokenWrapperResponseDto } from './dto/token-response.dto';
+import {
+    InviteTokensWrapperResponseDto,
+    InviteTokenWrapperResponseDto
+} from './dto/token-response.dto';
 
 @Controller('invite-token')
 export class InviteTokenController {
@@ -60,9 +63,10 @@ export class InviteTokenController {
     }
 
     @Public()
-    @Get(':id')
+    @Get(':token')
     @ApiOkResponse({ type: InviteTokenWrapperResponseDto })
-    async getDtoById(@Param('id', ParseIntPipe) id: number) {
-        return await this.inviteTokenService.getDtoById(id);
+    async getDtoById(@Param('token') token: string) {
+        console.log({token});
+        return await this.inviteTokenService.getDtoByToken(token);
     }
 }
