@@ -36,7 +36,9 @@
             "@role": ["src/role"],
             "@role/*": ["src/role/*"],
             "@invite-token": ["src/invite-token"],
-            "@invite-token/*": ["src/invite-token/*"]
+            "@invite-token/*": ["src/invite-token/*"],
+            "@team": ["src/team"],
+            "@team/*": ["src/team/*"]
         }
     }
 }

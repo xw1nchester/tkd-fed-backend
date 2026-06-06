@@ -44,6 +44,11 @@ model Code {
     @@map("codes")
 }
 
+enum Gender {
+    MALE
+    FEMALE
+}
+
 model User {
     id           Int           @id @default(autoincrement())
     email        String        @unique
@@ -52,6 +57,7 @@ model User {
     lastName     String?       @map("last_name")
     middleName   String?       @map("middle_name")
     birthDate    DateTime?     @map("birth_date")
+    gender       Gender        @default(MALE)
     password     String?
     isVerified   Boolean       @default(false) @map("is_verified")
     createdAt    DateTime      @default(now()) @map("created_at")

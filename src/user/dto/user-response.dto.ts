@@ -45,6 +45,19 @@ export class UserResponseDto {
     role: RoleDto;
 }
 
+export class TeamShortResponseDto {
+    @ApiProperty({ example: 1 })
+    id: number;
+
+    @ApiProperty({ example: 'Медитация' })
+    name: string;
+}
+
+export class InvitedUserResponseDto extends UserResponseDto {
+    @ApiProperty({ type: TeamShortResponseDto, isArray: true })
+    teams: [];
+}
+
 export class UserWrapperResponseDto {
     @ApiProperty({ type: UserResponseDto })
     user: UserResponseDto;

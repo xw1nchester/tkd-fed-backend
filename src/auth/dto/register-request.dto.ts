@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Gender } from '@prisma-client';
 import { Transform } from 'class-transformer';
 import {
     IsDateString,
     IsEmail,
+    IsEnum,
     IsNotEmpty,
     IsOptional,
     IsString,
@@ -33,6 +35,13 @@ export class RegisterRequestDto {
     @ApiProperty({ example: '2024-06-01' })
     @IsDateString()
     birthDate: string;
+
+    @ApiProperty({
+        enum: Gender,
+        example: Gender.MALE
+    })
+    @IsEnum(Gender)
+    gender: Gender
 
     @ApiProperty({ example: 'StrongPass123!', minLength: 8 })
     @IsString()

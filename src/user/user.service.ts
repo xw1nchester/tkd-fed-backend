@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '@prisma/prisma.service';
-import { Prisma, Role, User } from '@prisma-client';
+import { Prisma, Role, Team, User } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
 import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
@@ -51,6 +51,7 @@ export class UserService {
             lastName,
             middleName,
             birthDate,
+            gender,
             password
         }: RegisterRequestDto,
         inviterId: number
@@ -62,6 +63,7 @@ export class UserService {
                 lastName,
                 middleName,
                 birthDate: new Date(birthDate),
+                gender,
                 password: hashSync(password, genSaltSync(10)),
                 invitedById: inviterId
             }
@@ -79,7 +81,7 @@ export class UserService {
         });
     }
 
-    createDto(user: User & { roles: Role[] }) {
+    createDto(user: User & { roles: Role[]; teams?: Partial<Team>[] }) {
         const staticUrl = this.configService.get('STATIC_URL');
         const avatarUrl = user.avatarKey
             ? `${staticUrl}/${user.avatarKey}`
@@ -94,8 +96,10 @@ export class UserService {
             lastName: user.lastName,
             middleName: user.middleName,
             birthDate: user.birthDate,
+            gender: user.gender,
             isVerified: user.isVerified,
-            roles: user.roles
+            roles: user.roles,
+            teams: user.teams
         };
     }
 
@@ -135,7 +139,8 @@ export class UserService {
                 firstName: dto.firstName,
                 lastName: dto.lastName,
                 middleName: dto.middleName,
-                birthDate: new Date(dto.birthDate)
+                birthDate: new Date(dto.birthDate),
+                gender: dto.gender
             }
         });
 
@@ -196,11 +201,13 @@ export class UserService {
     async findAll({
         query,
         excludeAdmins = true,
-        invitedById
+        invitedById,
+        includeTeams = false
     }: {
         query: Partial<AdminUserQueryDto>;
         excludeAdmins?: boolean;
         invitedById?: number;
+        includeTeams?: boolean;
     }) {
         const { page, limit, search, teamId, roleId } = query;
         const skip = (page - 1) * limit;
@@ -256,7 +263,12 @@ export class UserService {
 
         const data = await this.prismaService.user.findMany({
             where,
-            include: { roles: true },
+            include: {
+                roles: true,
+                ...(includeTeams && {
+                    teams: { select: { id: true, name: true } }
+                })
+            },
             orderBy: { createdAt: 'desc' },
             take: limit,
             skip

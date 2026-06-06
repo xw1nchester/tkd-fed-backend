@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Gender } from '@prisma-client';
 import {
     IsDateString,
+    IsEnum,
     IsNotEmpty,
     IsOptional,
     IsString
@@ -25,4 +27,11 @@ export class BasicUserEditRequestDto {
     @ApiProperty({ example: '2024-06-01' })
     @IsDateString()
     birthDate: string;
+
+    @ApiProperty({
+        enum: Gender,
+        example: Gender.MALE
+    })
+    @IsEnum(Gender)
+    gender: Gender;
 }

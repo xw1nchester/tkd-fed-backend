@@ -66,7 +66,6 @@ export class InviteTokenController {
     @Get(':token')
     @ApiOkResponse({ type: InviteTokenWrapperResponseDto })
     async getDtoById(@Param('token') token: string) {
-        console.log({token});
         return await this.inviteTokenService.getDtoByToken(token);
     }
 }

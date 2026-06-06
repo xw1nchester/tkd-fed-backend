@@ -20,6 +20,7 @@ import {
     getSchemaPath
 } from '@nestjs/swagger';
 import {
+    InvitedUserResponseDto,
     UserResponseDto,
     UserWrapperResponseDto
 } from './dto/user-response.dto';
@@ -102,7 +103,7 @@ export class UserController {
     @Role(RoleEnum.TRAINER)
     @Get('me/invited-users')
     @ApiBearerAuth()
-    @ApiExtraModels(PaginationResponseDto, UserResponseDto)
+    @ApiExtraModels(PaginationResponseDto, InvitedUserResponseDto)
     @ApiOkResponse({
         schema: {
             allOf: [
@@ -110,7 +111,7 @@ export class UserController {
                     properties: {
                         data: {
                             type: 'array',
-                            items: { $ref: getSchemaPath(UserResponseDto) }
+                            items: { $ref: getSchemaPath(InvitedUserResponseDto) }
                         }
                     }
                 },
@@ -122,6 +123,10 @@ export class UserController {
         @Query() query: UserQueryDto,
         @CurrentUser() user: JwtPayload
     ) {
-        return await this.userService.findAll({ query, invitedById: user.id });
+        return await this.userService.findAll({
+            query,
+            invitedById: user.id,
+            includeTeams: true
+        });
     }
 }
