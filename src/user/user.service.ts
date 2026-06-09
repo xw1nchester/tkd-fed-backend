@@ -7,7 +7,16 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '@prisma/prisma.service';
-import { Prisma, Role, Team, User } from '@prisma-client';
+import {
+    Belt,
+    Document,
+    DocumentVerification,
+    Prisma,
+    Role,
+    SportRank,
+    Team,
+    User
+} from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
 import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
@@ -15,6 +24,7 @@ import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
 import { RegisterRequestDto } from '@auth/dto/register-request.dto';
 import { AdminUserQueryDto } from '@admin/user/dto/admin-user-query.dto';
+import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
 
 @Injectable()
 export class UserService {
@@ -291,5 +301,41 @@ export class UserService {
         if (userIds.length != users.length) {
             throw new NotFoundException('Пользователь не найден');
         }
+    }
+
+    createUserDetailedDto({
+        belt,
+        sportRank,
+        documents,
+        documentVerification
+    }: {
+        belt: Belt;
+        sportRank: SportRank;
+        documents: Document[];
+        documentVerification: DocumentVerification;
+    }) {
+        return {belt, sportRank, documents, documentVerification};
+    }
+
+    async getDetailedInfoById(id: number) {
+        const data = await this.prismaService.user.findFirst({
+            where: { id },
+            include: {
+                belt: true,
+                sportRank: true,
+                documents: {
+                    include: {
+                        file: true
+                    }
+                },
+                documentVerification: true
+            }
+        });
+
+        return { user: this.createUserDetailedDto(data) };
+    }
+
+    async updateDetailedInfo(id: number, dto: DetailedUserInfoRequestDto) {
+        
     }
 }

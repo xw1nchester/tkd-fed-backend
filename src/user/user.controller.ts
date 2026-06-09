@@ -30,6 +30,7 @@ import { UserQueryDto } from './dto/user-query.dto';
 import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 import { RoleGuard } from '@auth/guards/role.guard';
 import { RoleEnum } from '@shared/enums/role.enum';
+import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
 
 @Controller('user')
 export class UserController {
@@ -111,7 +112,9 @@ export class UserController {
                     properties: {
                         data: {
                             type: 'array',
-                            items: { $ref: getSchemaPath(InvitedUserResponseDto) }
+                            items: {
+                                $ref: getSchemaPath(InvitedUserResponseDto)
+                            }
                         }
                     }
                 },
@@ -128,5 +131,17 @@ export class UserController {
             invitedById: user.id,
             includeTeams: true
         });
+    }
+
+    @Get('me/detailed')
+    @ApiBearerAuth()
+    async getDetailedInfoById(@CurrentUser() user: JwtPayload) {
+        return await this.userService.getDetailedInfoById(user.id);
+    }
+
+    @Patch('me/detailed')
+    @ApiBearerAuth()
+    async updateDetailedInfo(@CurrentUser() user: JwtPayload, @Body() dto: DetailedUserInfoRequestDto) {
+
     }
 }

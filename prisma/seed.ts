@@ -213,6 +213,29 @@ async function main() {
         console.log(`Belt ${JSON.stringify({ ...result })} upserted`);
     }
 
+    const sportRanks = [
+        { id: 1, name: '3-й юношеский разряд' },
+        { id: 2, name: '2-й юношеский разряд' },
+        { id: 3, name: '1-й юношеский разряд' },
+        { id: 4, name: '3-й спортивный разряд' },
+        { id: 5, name: '2-й спортивный разряд' },
+        { id: 6, name: '1-й спортивный разряд' },
+        { id: 7, name: 'Кандидат в мастера спорта' },
+        { id: 8, name: 'Мастер спорта России' },
+        { id: 9, name: 'Мастер спорта международного класса' },
+        { id: 10, name: 'Заслуженный мастер спорта России' }
+    ];
+
+    for (const { id, ...rest } of sportRanks) {
+        const result = await prisma.sportRank.upsert({
+            where: { id },
+            update: { ...rest },
+            create: { id, ...rest }
+        });
+
+        console.log(`SportRank ${JSON.stringify(result)} upserted`);
+    }
+
     console.log(`Seeding finished successfully!`);
 }
 

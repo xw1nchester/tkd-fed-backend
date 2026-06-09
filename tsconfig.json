@@ -38,7 +38,13 @@
             "@invite-token": ["src/invite-token"],
             "@invite-token/*": ["src/invite-token/*"],
             "@team": ["src/team"],
-            "@team/*": ["src/team/*"]
+            "@team/*": ["src/team/*"],
+            "@belt": ["src/belt"],
+            "@belt/*": ["src/belt/*"],
+            "@sport-rank": ["src/sport-rank"],
+            "@sport-rank/*": ["src/sport-rank/*"],
+            "@file": ["src/file"],
+            "@file/*": ["src/file/*"],
         }
     }
 }

@@ -1,6 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class FileDto {
+    @ApiProperty({ example: 1 })
+    id: number;
+
     @ApiProperty({
         example: '64c43ba9-b062-4875-a989-291948999b4e.jpeg'
     })
@@ -12,14 +15,14 @@ export class FileDto {
     url: string;
 
     @ApiProperty({
-        example: '6492322426.jpeg'
-    })
-    name: string;
-
-    @ApiProperty({
         example: 'image/jpeg'
     })
     type: string;
+
+    @ApiProperty({
+        example: '6492322426.jpeg'
+    })
+    name: string;
 
     @ApiProperty({
         example: 245760

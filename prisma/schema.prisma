@@ -26,8 +26,8 @@ model Role {
 model Token {
     token      String   @unique
     expiryDate DateTime @map("expiry_date")
-    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId     Int      @map("user_id")
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userAgent  String   @map("user_agent")
 
     @@map("tokens")
@@ -38,8 +38,8 @@ model Code {
     code       String
     retryDate  DateTime @map("retry_date")
     expiryDate DateTime @map("expiry_date")
-    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId     Int      @map("user_id")
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@map("codes")
 }
@@ -50,29 +50,34 @@ enum Gender {
 }
 
 model User {
-    id           Int           @id @default(autoincrement())
-    email        String        @unique
-    avatarKey    String?       @map("avatar_key")
-    firstName    String?       @map("first_name")
-    lastName     String?       @map("last_name")
-    middleName   String?       @map("middle_name")
-    birthDate    DateTime?     @map("birth_date")
-    gender       Gender        @default(MALE)
-    password     String?
-    isVerified   Boolean       @default(false) @map("is_verified")
-    createdAt    DateTime      @default(now()) @map("created_at")
-    updatedAt    DateTime      @updatedAt @map("updated_at")
-    roles        Role[]
-    tokens       Token[]
-    codes        Code[]
-    invitedById  Int?          @map("invited_by_id")
-    invitedBy    User?         @relation("UserInvitations", fields: [invitedById], references: [id])
-    invitedUsers User[]        @relation("UserInvitations")
-    inviteTokens InviteToken[]
-    teams        Team[]
-    ownedTeams   Team[]        @relation("TeamCreator")
-    beltId       Int?          @map("belt_id")
-    belt         Belt?         @relation(fields: [beltId], references: [id])
+    id                   Int                   @id @default(autoincrement())
+    email                String                @unique
+    avatarKey            String?               @map("avatar_key")
+    firstName            String?               @map("first_name")
+    lastName             String?               @map("last_name")
+    middleName           String?               @map("middle_name")
+    birthDate            DateTime?             @map("birth_date")
+    gender               Gender                @default(MALE)
+    password             String?
+    isVerified           Boolean               @default(false) @map("is_verified")
+    createdAt            DateTime              @default(now()) @map("created_at")
+    updatedAt            DateTime              @updatedAt @map("updated_at")
+    roles                Role[]
+    tokens               Token[]
+    codes                Code[]
+    invitedById          Int?                  @map("invited_by_id")
+    invitedBy            User?                 @relation("UserInvitations", fields: [invitedById], references: [id])
+    invitedUsers         User[]                @relation("UserInvitations")
+    inviteTokens         InviteToken[]
+    teams                Team[]
+    ownedTeams           Team[]                @relation("TeamCreator")
+    beltId               Int?                  @map("belt_id")
+    belt                 Belt?                 @relation(fields: [beltId], references: [id])
+    sportRankId          Int?                  @map("sport_rank_id")
+    sportRank            SportRank?            @relation(fields: [sportRankId], references: [id])
+    documents            Document[]
+    files                File[]
+    documentVerification DocumentVerification?
 
     @@map("users")
 }
@@ -118,4 +123,65 @@ model Belt {
     users       User[]
 
     @@map("belts")
+}
+
+model SportRank {
+    id    Int    @id @default(autoincrement())
+    name  String
+    users User[]
+
+    @@map("sport_ranks")
+}
+
+model File {
+    id         Int        @id @default(autoincrement())
+    userId     Int        @map("user_id")
+    user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    storageKey String     @map("storage_key")
+    mimeType   String     @map("mime_type")
+    filename   String
+    createdAt  DateTime   @default(now()) @map("created_at")
+    documents  Document[]
+
+    @@map("files")
+}
+
+enum DocumentType {
+    PASSPORT
+    BIRTH_CERTIFICATE
+    EDUCATION_CERTIFICATE
+    BELT_CERTIFICATE
+    SPORT_RANK_CERTIFICATE
+    OTHER
+}
+
+model Document {
+    id        Int          @id @default(autoincrement())
+    userId    Int          @map("user_id")
+    user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    type      DocumentType
+    fileId    Int          @map("file_id")
+    file      File         @relation(fields: [fileId], references: [id], onDelete: Cascade)
+    createdAt DateTime     @default(now()) @map("created_at")
+    updatedAt DateTime     @updatedAt @map("updated_at")
+
+    @@map("documents")
+}
+
+enum VerificationStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+model DocumentVerification {
+    id        Int                @id @default(autoincrement())
+    userId    Int                @unique @map("user_id")
+    user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+    status    VerificationStatus @default(PENDING)
+    comment   String?
+    createdAt DateTime           @default(now()) @map("created_at")
+    updatedAt DateTime           @updatedAt @map("updated_at")
+
+    @@map("document_verifications")
 }

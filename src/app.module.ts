@@ -11,12 +11,14 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
 import { RoleService } from './role/role.service';
 import { RoleModule } from './role/role.module';
 import { InviteTokenModule } from './invite-token/invite-token.module';
 import { TeamModule } from './team/team.module';
+import { BeltModule } from './belt/belt.module';
+import { SportRankModule } from './sport-rank/sport-rank.module';
+import { FileModule } from './file/file.module';
 
 @Module({
     imports: [
@@ -30,11 +32,13 @@ import { TeamModule } from './team/team.module';
         UserModule,
         MailModule,
         CodeModule,
-        UploadModule,
         AdminModule,
         RoleModule,
         InviteTokenModule,
-        TeamModule
+        TeamModule,
+        BeltModule,
+        SportRankModule,
+        FileModule
     ],
     controllers: [AppController],
     providers: [
