@@ -163,7 +163,6 @@ model Document {
     fileId    Int          @map("file_id")
     file      File         @relation(fields: [fileId], references: [id], onDelete: Cascade)
     createdAt DateTime     @default(now()) @map("created_at")
-    updatedAt DateTime     @updatedAt @map("updated_at")
 
     @@map("documents")
 }

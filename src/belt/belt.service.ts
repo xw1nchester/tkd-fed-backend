@@ -9,4 +9,9 @@ export class BeltService {
         const belts = await this.prismaService.belt.findMany();
         return { belts };
     }
+
+    async exists(id: number) {
+        const count = await this.prismaService.belt.count({ where: { id } });
+        return count > 0;
+    }
 }

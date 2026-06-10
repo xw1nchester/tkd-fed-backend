@@ -31,6 +31,8 @@ import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 import { RoleGuard } from '@auth/guards/role.guard';
 import { RoleEnum } from '@shared/enums/role.enum';
 import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
+import { UserDetailedWrapperResponseDto } from './dto/user-detailed-response.dto';
+import { InvitedUserQueryDto } from './dto/invited-user-query.dto';
 
 @Controller('user')
 export class UserController {
@@ -41,6 +43,23 @@ export class UserController {
     @ApiOkResponse({ type: UserWrapperResponseDto })
     async getUserMe(@CurrentUser() user: JwtPayload) {
         return await this.userService.getDtoById(user.id);
+    }
+
+    @Get('detailed')
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: UserDetailedWrapperResponseDto })
+    async getDetailedUserInfoDto(@CurrentUser() user: JwtPayload) {
+        return await this.userService.getDetailedUserInfoDto(user.id);
+    }
+
+    @Patch('detailed')
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: UserDetailedWrapperResponseDto })
+    async updateDetailedUserInfo(
+        @CurrentUser() user: JwtPayload,
+        @Body() dto: DetailedUserInfoRequestDto
+    ) {
+        return await this.userService.updateDetailedUserInfo(user.id, dto);
     }
 
     @Public()
@@ -123,7 +142,7 @@ export class UserController {
         }
     })
     async findInvitedUsers(
-        @Query() query: UserQueryDto,
+        @Query() query: InvitedUserQueryDto,
         @CurrentUser() user: JwtPayload
     ) {
         return await this.userService.findAll({
@@ -133,15 +152,32 @@ export class UserController {
         });
     }
 
-    @Get('me/detailed')
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER)
+    @Get(':id/detailed')
     @ApiBearerAuth()
-    async getDetailedInfoById(@CurrentUser() user: JwtPayload) {
-        return await this.userService.getDetailedInfoById(user.id);
+    @ApiOkResponse({ type: UserDetailedWrapperResponseDto })
+    async getDetailedUserInfoByTrainer(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: JwtPayload
+    ) {
+        return await this.userService.getDetailedUserInfoByTrainer(id, user.id);
     }
 
-    @Patch('me/detailed')
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER)
+    @Patch(':id/detailed')
     @ApiBearerAuth()
-    async updateDetailedInfo(@CurrentUser() user: JwtPayload, @Body() dto: DetailedUserInfoRequestDto) {
-
+    @ApiOkResponse({ type: UserDetailedWrapperResponseDto })
+    async updateDetailedUserInfoByTrainer(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: JwtPayload,
+        @Body() dto: DetailedUserInfoRequestDto
+    ) {
+        return await this.userService.updateDetailedUserInfoByTrainer(
+            id,
+            user.id,
+            dto
+        );
     }
 }

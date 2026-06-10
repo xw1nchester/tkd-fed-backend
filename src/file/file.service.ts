@@ -39,4 +39,15 @@ export class FileService {
 
         return { files: data.map(file => this.createDto(file)) };
     }
+
+    // TODO: учитывать id создателя файла
+    async exists(ids: number[]) {
+        ids = [...new Set(ids)];
+
+        const count = await this.prismaService.file.count({
+            where: { id: { in: ids } }
+        });
+
+        return ids.length == count;
+    }
 }

@@ -9,4 +9,9 @@ export class SportRankService {
         const sportRanks = await this.prismaService.sportRank.findMany();
         return { sportRanks };
     }
+
+    async exists(id: number) {
+        const count = await this.prismaService.sportRank.count({ where: { id } });
+        return count > 0;
+    }
 }

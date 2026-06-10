@@ -2,6 +2,7 @@ import { genSaltSync, hashSync } from 'bcrypt';
 
 import {
     BadRequestException,
+    ForbiddenException,
     Injectable,
     NotFoundException
 } from '@nestjs/common';
@@ -11,6 +12,7 @@ import {
     Belt,
     Document,
     DocumentVerification,
+    File,
     Prisma,
     Role,
     SportRank,
@@ -25,12 +27,19 @@ import { RoleEnum } from '@shared/enums/role.enum';
 import { RegisterRequestDto } from '@auth/dto/register-request.dto';
 import { AdminUserQueryDto } from '@admin/user/dto/admin-user-query.dto';
 import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
+import { FileService } from '@file/file.service';
+import { BeltService } from '@belt/belt.service';
+import { SportRankService } from '@sport-rank/sport-rank.service';
+import { AdminDetailedUserInfoRequestDto } from '@admin/user/dto/admin-detailed-user-info-request.dto';
 
 @Injectable()
 export class UserService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private readonly fileService: FileService,
+        private readonly beltService: BeltService,
+        private readonly sportRankService: SportRankService
     ) {}
 
     async getById(id: number) {
@@ -182,6 +191,7 @@ export class UserService {
                 lastName: dto.lastName,
                 middleName: dto.middleName,
                 birthDate: new Date(dto.birthDate),
+                gender: dto.gender,
                 roles: {
                     set: dto.roleIds.map(id => ({ id }))
                 }
@@ -219,7 +229,7 @@ export class UserService {
         invitedById?: number;
         includeTeams?: boolean;
     }) {
-        const { page, limit, search, teamId, roleId } = query;
+        const { page, limit, search, teamId, roleId, excludedTeamId } = query;
         const skip = (page - 1) * limit;
 
         const where: Prisma.UserWhereInput = {
@@ -268,6 +278,13 @@ export class UserService {
                         id: roleId
                     }
                 }
+            }),
+            ...(excludedTeamId && {
+                teams: {
+                    none: {
+                        id: excludedTeamId
+                    }
+                }
             })
         };
 
@@ -311,13 +328,31 @@ export class UserService {
     }: {
         belt: Belt;
         sportRank: SportRank;
-        documents: Document[];
+        documents: (Document & { file: File })[];
         documentVerification: DocumentVerification;
     }) {
-        return {belt, sportRank, documents, documentVerification};
+        return {
+            belt,
+            sportRank,
+            documents: documents.map(({ id, type, createdAt, file }) => ({
+                id,
+                type,
+                createdAt,
+                file: this.fileService.createDto(file)
+            })),
+            documentVerification: documentVerification
+                ? {
+                      id: documentVerification.id,
+                      status: documentVerification.status,
+                      comment: documentVerification.comment,
+                      createdAt: documentVerification.createdAt,
+                      updatedAt: documentVerification.updatedAt
+                  }
+                : null
+        };
     }
 
-    async getDetailedInfoById(id: number) {
+    async getDetailedUserInfoDto(id: number) {
         const data = await this.prismaService.user.findFirst({
             where: { id },
             include: {
@@ -335,7 +370,87 @@ export class UserService {
         return { user: this.createUserDetailedDto(data) };
     }
 
-    async updateDetailedInfo(id: number, dto: DetailedUserInfoRequestDto) {
-        
+    async getDetailedUserInfoByTrainer(userId: number, trainerId: number) {
+        // TODO: предусмотреть чтобы редактировать пользователя мог любой его родитель
+        const { invitedById } = await this.getById(userId);
+
+        if (trainerId != invitedById) {
+            throw new ForbiddenException();
+        }
+
+        return await this.getDetailedUserInfoDto(userId);
+    }
+
+    async updateDetailedUserInfo(
+        id: number,
+        {
+            beltId,
+            sportRankId,
+            documents,
+            status,
+            comment
+        }: Partial<AdminDetailedUserInfoRequestDto>
+    ) {
+        const beltExists = await this.beltService.exists(beltId);
+
+        if (!beltExists) {
+            throw new NotFoundException('Пояс не найден');
+        }
+
+        const sportRankExists = await this.sportRankService.exists(sportRankId);
+
+        if (!sportRankExists) {
+            throw new NotFoundException('Разряд не найден');
+        }
+
+        const filesExists = await this.fileService.exists(
+            documents.map(d => d.fileId)
+        );
+
+        if (!filesExists) {
+            throw new NotFoundException('Файл не найден');
+        }
+
+        await this.prismaService.user.update({
+            where: { id },
+            data: {
+                beltId,
+                sportRankId,
+                documents: {
+                    deleteMany: {},
+                    create: documents.map(({ type, fileId }) => ({
+                        type,
+                        fileId
+                    }))
+                },
+                documentVerification: {
+                    upsert: {
+                        create: {
+                            status: 'PENDING'
+                        },
+                        update: {
+                            status: status ?? 'PENDING',
+                            comment: comment ?? ''
+                        }
+                    }
+                }
+            }
+        });
+
+        return await this.getDetailedUserInfoDto(id);
+    }
+
+    async updateDetailedUserInfoByTrainer(
+        userId: number,
+        trainerId: number,
+        dto: DetailedUserInfoRequestDto
+    ) {
+        const { invitedById } = await this.getById(userId);
+
+        if (trainerId != invitedById) {
+            throw new ForbiddenException();
+        }
+
+        return await this.updateDetailedUserInfo(userId, dto);
     }
 }

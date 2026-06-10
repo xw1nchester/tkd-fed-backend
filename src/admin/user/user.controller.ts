@@ -29,6 +29,7 @@ import { UserEditRequestDto } from './dto/user-edit-request.dto';
 import { AvatarRequestDto } from '@user/dto/avatar-request.dto';
 import { JwtPayload } from '@auth/interfaces';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
+import { AdminDetailedUserInfoRequestDto } from './dto/admin-detailed-user-info-request.dto';
 
 @ApiTags('Admin')
 @UseGuards(RoleGuard)
@@ -74,7 +75,10 @@ export class UserController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOkResponse({ type: UserWrapperResponseDto })
-    async removeUser(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: JwtPayload) {
+    async removeUser(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: JwtPayload
+    ) {
         return await this.userService.removeUser(id, user.id);
     }
 
@@ -93,5 +97,14 @@ export class UserController {
     @ApiOkResponse({ type: UserWrapperResponseDto })
     async deleteAvatar(@Param('id', ParseIntPipe) id: number) {
         return await this.userService.deleteAvatar(id);
+    }
+
+    @Patch(':id/detailed')
+    @ApiBearerAuth()
+    async updateDetailedUserInfo(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: AdminDetailedUserInfoRequestDto
+    ) {
+        return await this.userService.updateDetailedUserInfo(id, dto);
     }
 }

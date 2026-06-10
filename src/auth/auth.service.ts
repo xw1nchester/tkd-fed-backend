@@ -1,5 +1,5 @@
 import { compareSync } from 'bcrypt';
-import { v4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 import {
     Injectable,
@@ -38,7 +38,7 @@ export class AuthService {
             }
         });
 
-        const token = v4();
+        const token = randomUUID();
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 14);
 

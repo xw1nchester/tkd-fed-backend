@@ -5,5 +5,6 @@ import { SportRankController } from './sport-rank.controller';
 @Module({
   controllers: [SportRankController],
   providers: [SportRankService],
+  exports: [SportRankService],
 })
 export class SportRankModule {}
