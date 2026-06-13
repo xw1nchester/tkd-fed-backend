@@ -30,6 +30,7 @@ import { AvatarRequestDto } from '@user/dto/avatar-request.dto';
 import { JwtPayload } from '@auth/interfaces';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
 import { AdminDetailedUserInfoRequestDto } from './dto/admin-detailed-user-info-request.dto';
+import { UserDetailedWrapperResponseDto } from '@user/dto/user-detailed-response.dto';
 
 @ApiTags('Admin')
 @UseGuards(RoleGuard)
@@ -99,8 +100,16 @@ export class UserController {
         return await this.userService.deleteAvatar(id);
     }
 
+    @Get(':id/detailed')
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: UserDetailedWrapperResponseDto })
+    async getDetailedUserInfoDto(@Param('id', ParseIntPipe) id: number) {
+        return await this.userService.getDetailedUserInfoDto(id);
+    }
+
     @Patch(':id/detailed')
     @ApiBearerAuth()
+    @ApiOkResponse({ type: UserDetailedWrapperResponseDto })
     async updateDetailedUserInfo(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: AdminDetailedUserInfoRequestDto
