@@ -51,4 +51,21 @@ export class MailService {
             }
         });
     }
+
+    async sendPasswordRecoveryCode({
+        to,
+        code
+    }: {
+        to: string;
+        code: string
+    }) {
+        await this.sendEmail({
+            subject: 'Подтверждение почты',
+            to,
+            template: 'email-verification',
+            context: {
+                code
+            }
+        });
+    }
 }

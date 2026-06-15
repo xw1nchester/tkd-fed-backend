@@ -6,7 +6,28 @@ import { PrismaService } from '@prisma/prisma.service';
 export class CodeService {
     constructor(private readonly prismaService: PrismaService) {}
 
+    private async deleteUserCodes(userId: number) {
+        await this.prismaService.code.deleteMany({
+            where: {
+                userId
+            }
+        });
+    }
+
     async create(userId: number) {
+        const existingCode = await this.prismaService.code.findFirst({
+            where: {
+                userId,
+                retryDate: {
+                    gt: new Date()
+                }
+            }
+        });
+
+        if (existingCode) {
+            throw new BadRequestException('Код уже отправлен');
+        }
+
         await this.prismaService.code.deleteMany({
             where: {
                 userId
@@ -37,23 +58,6 @@ export class CodeService {
         return formattedCode;
     }
 
-    async recreate(userId: number) {
-        const existingCode = await this.prismaService.code.findFirst({
-            where: {
-                userId,
-                retryDate: {
-                    gt: new Date()
-                }
-            }
-        });
-
-        if (existingCode) {
-            throw new BadRequestException('Код уже отправлен');
-        }
-
-        return await this.create(userId);
-    }
-
     async validateCode(code: string, userId: number) {
         const existingCode = await this.prismaService.code.findFirst({
             where: {
@@ -68,5 +72,7 @@ export class CodeService {
         if (!existingCode) {
             throw new BadRequestException('Код недействителен или истек');
         }
+
+        await this.deleteUserCodes(userId);
     }
 }

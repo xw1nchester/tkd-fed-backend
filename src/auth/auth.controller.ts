@@ -4,7 +4,9 @@ import {
     Body,
     Controller,
     Get,
+    HttpCode,
     HttpStatus,
+    Patch,
     Post,
     Res
 } from '@nestjs/common';
@@ -15,10 +17,14 @@ import { AuthService } from './auth.service';
 import { Cookie, CurrentUser, Public, UserAgent } from './decorators';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { JwtPayload } from './interfaces';
-import { CodeRequestDto } from './dto/code-request.dto';
+import { CodeDto } from './dto/code.dto';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { AuthResponseDto, TokenResponseDto } from './dto/auth-response.dto';
 import { RegisterRequestDto } from './dto/register-request.dto';
+import { RecoveryRequestDto } from './dto/recovery-request.dto';
+import { VerifyRecoveryDto } from './dto/verify-recovery.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+import { ChangePasswordRequestDto } from './dto/change-password-request.dto';
 
 const REFRESH_TOKEN = 'refresh-token';
 
@@ -113,11 +119,42 @@ export class AuthController {
     @Post('verify')
     @ApiBearerAuth()
     async verify(
-        @Body() { code }: CodeRequestDto,
+        @Body() { code }: CodeDto,
         @CurrentUser() user: JwtPayload
     ) {
         await this.authService.verify(code, user.id);
 
         return HttpStatus.OK;
+    }
+
+    @Public()
+    @Post('send-recovery')
+    @HttpCode(HttpStatus.OK)
+    async sendRecoveryCode(@Body() { email }: RecoveryRequestDto) {
+        await this.authService.sendRecoveryCode(email);
+    }
+
+    @Public()
+    @Post('verify-recovery')
+    @ApiOkResponse({ type: CodeDto })
+    async verifyRecoveryCode(@Body() dto: VerifyRecoveryDto) {
+        return await this.authService.verifyRecoveryCode(dto);
+    }
+
+    @Public()
+    @Post('recovery-password')
+    @HttpCode(HttpStatus.OK)
+    async recoveryPassword(@Body() dto: RecoveryPasswordDto) {
+        await this.authService.recoveryPassword(dto);
+    }
+
+    @Patch('change-password')
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth()
+    async changePassword(
+        @CurrentUser() user: JwtPayload,
+        @Body() dto: ChangePasswordRequestDto
+    ) {
+        await this.authService.changePassword(user.id, dto);
     }
 }

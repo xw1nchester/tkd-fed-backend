@@ -92,6 +92,15 @@ export class UserService {
         return await this.getById(createdUser.id);
     }
 
+    async updatePassword(id: number, newPassword: string) {
+        return await this.prismaService.user.update({
+            where: { id },
+            data: {
+                password: hashSync(newPassword, genSaltSync(10))
+            }
+        });
+    }
+
     async verify(id: number) {
         return await this.prismaService.user.update({
             where: {

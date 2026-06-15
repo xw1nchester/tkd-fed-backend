@@ -5,7 +5,8 @@ import {
     Injectable,
     BadRequestException,
     UnauthorizedException,
-    NotFoundException
+    NotFoundException,
+    Logger
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
@@ -18,16 +19,21 @@ import { UserService } from '@user/user.service';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { RegisterRequestDto } from './dto/register-request.dto';
 import { InviteTokenService } from '@invite-token/invite-token.service';
+import { VerifyRecoveryDto } from './dto/verify-recovery.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+import { ChangePasswordRequestDto } from './dto/change-password-request.dto';
 
 @Injectable()
 export class AuthService {
+    private readonly logger = new Logger(AuthService.name);
+
     constructor(
         private readonly prismaService: PrismaService,
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
         private readonly codeService: CodeService,
         private readonly mailService: MailService,
-        private readonly inviteTokenService: InviteTokenService,
+        private readonly inviteTokenService: InviteTokenService
     ) {}
 
     private async getRefreshToken(userId: number, userAgent: string) {
@@ -92,10 +98,14 @@ export class AuthService {
         let inviterId: number;
 
         if (dto.inviteToken != undefined) {
-            const inviteToken = await this.inviteTokenService.getByToken(dto.inviteToken);
+            const inviteToken = await this.inviteTokenService.getByToken(
+                dto.inviteToken
+            );
 
-            if(!inviteToken) {
-                throw new NotFoundException('Ссылка для приглашения недействительна');
+            if (!inviteToken) {
+                throw new NotFoundException(
+                    'Ссылка для приглашения недействительна'
+                );
             }
 
             inviterId = inviteToken.creatorId;
@@ -107,6 +117,7 @@ export class AuthService {
 
         const code = await this.codeService.create(user.id);
 
+        // TODO: отправлять задачу в bullmq
         this.mailService.sendVerificationCode({
             to: dto.email,
             code
@@ -169,7 +180,7 @@ export class AuthService {
             throw new BadRequestException('Ваш аккаунт уже верифицирован');
         }
 
-        const code = await this.codeService.recreate(userId);
+        const code = await this.codeService.create(userId);
 
         this.mailService.sendVerificationCode({
             to: email,
@@ -187,5 +198,66 @@ export class AuthService {
         await this.codeService.validateCode(code, userId);
 
         await this.userService.verify(userId);
+    }
+
+    async sendRecoveryCode(email: string): Promise<void> {
+        const existingUser = await this.userService.getByEmail(email);
+
+        if (!existingUser) {
+            this.logger.warn(
+                `Recovery code requested for non-existent email: ${email}`
+            );
+            return;
+        }
+
+        const code = await this.codeService.create(existingUser.id);
+
+        // TODO: отправлять задачу в bullmq
+        this.mailService.sendPasswordRecoveryCode({
+            to: existingUser.email,
+            code
+        });
+    }
+
+    async verifyRecoveryCode({ email, code }: VerifyRecoveryDto) {
+        const existingUser = await this.userService.getByEmail(email);
+
+        if (!existingUser) {
+            throw new BadRequestException('Код недействителен или истек');
+        }
+
+        await this.codeService.validateCode(code, existingUser.id);
+
+        const newCode = await this.codeService.create(existingUser.id);
+
+        return { code: newCode };
+    }
+
+    async recoveryPassword({ email, code, password }: RecoveryPasswordDto) {
+        const existingUser = await this.userService.getByEmail(email);
+
+        if (!existingUser) {
+            throw new BadRequestException('Код недействителен или истек');
+        }
+
+        await this.codeService.validateCode(code, existingUser.id);
+
+        await this.userService.updatePassword(existingUser.id, password);
+    }
+
+    async changePassword(
+        userId: number,
+        { oldPassword, newPassword }: ChangePasswordRequestDto
+    ) {
+        const existingUser = await this.userService.getById(userId);
+
+        if (!compareSync(oldPassword, existingUser.password)) {
+            throw new BadRequestException('Неверный старый пароль');
+        }
+
+        return await this.userService.updatePassword(
+            existingUser.id,
+            newPassword
+        );
     }
 }
