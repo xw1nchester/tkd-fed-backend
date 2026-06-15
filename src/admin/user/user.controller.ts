@@ -90,7 +90,7 @@ export class UserController {
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: AvatarRequestDto
     ) {
-        return await this.userService.updateAvatar(id, dto.key);
+        return await this.userService.updateAvatar(id, dto.fileId);
     }
 
     @Delete(':id/avatar')

@@ -46,7 +46,7 @@ export class UserService {
     async getById(id: number) {
         const user = await this.prismaService.user.findFirst({
             where: { id },
-            include: { roles: true }
+            include: { avatar: true, roles: true }
         });
 
         if (!user) {
@@ -110,17 +110,13 @@ export class UserService {
         });
     }
 
-    createDto(user: User & { roles: Role[]; teams?: Partial<Team>[] }) {
-        const staticUrl = this.configService.get('STATIC_URL');
-        const avatarUrl = user.avatarKey
-            ? `${staticUrl}/${user.avatarKey}`
-            : null;
-
+    createDto(
+        user: User & { avatar?: File; roles: Role[]; teams?: Partial<Team>[] }
+    ) {
         return {
             id: user.id,
             email: user.email,
-            avatarKey: user.avatarKey,
-            avatarUrl,
+            avatar: this.fileService.createDto(user.avatar),
             firstName: user.firstName,
             lastName: user.lastName,
             middleName: user.middleName,
@@ -137,12 +133,18 @@ export class UserService {
         return { user: this.createDto(user) };
     }
 
-    async updateAvatar(id: number, avatarKey: string) {
+    async updateAvatar(id: number, fileId: number) {
         await this.getById(id);
+
+        const fileExists = await this.fileService.exists([fileId]);
+
+        if (!fileExists) {
+            throw new NotFoundException('Файл не найден');
+        }
 
         await this.prismaService.user.update({
             where: { id },
-            data: { avatarKey }
+            data: { avatarId: fileId }
         });
 
         return await this.getDtoById(id);
@@ -153,8 +155,10 @@ export class UserService {
 
         await this.prismaService.user.update({
             where: { id },
-            data: { avatarKey: null }
+            data: { avatarId: null }
         });
+
+        // TODO: удалить файл
 
         return await this.getDtoById(id);
     }
@@ -301,6 +305,7 @@ export class UserService {
         const data = await this.prismaService.user.findMany({
             where,
             include: {
+                avatar: true,
                 roles: true,
                 ...(includeTeams && {
                     teams: { select: { id: true, name: true } }

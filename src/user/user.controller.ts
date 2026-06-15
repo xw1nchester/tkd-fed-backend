@@ -77,7 +77,7 @@ export class UserController {
         @CurrentUser() user: JwtPayload,
         @Body() dto: AvatarRequestDto
     ) {
-        return await this.userService.updateAvatar(user.id, dto.key);
+        return await this.userService.updateAvatar(user.id, dto.fileId);
     }
 
     @Delete('avatar')

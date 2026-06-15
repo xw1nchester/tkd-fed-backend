@@ -12,6 +12,8 @@ export class FileService {
     ) {}
 
     createDto(file: File) {
+        if (!file) return null;
+
         const staticUrl = this.configService.get('STATIC_URL');
 
         return {

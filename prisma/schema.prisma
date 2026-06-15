@@ -52,7 +52,8 @@ enum Gender {
 model User {
     id                   Int                   @id @default(autoincrement())
     email                String                @unique
-    avatarKey            String?               @map("avatar_key")
+    avatarId             Int?                  @map("avatar_id")
+    avatar               File?                 @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: Cascade)
     firstName            String?               @map("first_name")
     lastName             String?               @map("last_name")
     middleName           String?               @map("middle_name")
@@ -76,7 +77,7 @@ model User {
     sportRankId          Int?                  @map("sport_rank_id")
     sportRank            SportRank?            @relation(fields: [sportRankId], references: [id])
     documents            Document[]
-    files                File[]
+    files                File[]                @relation("UserFiles")
     documentVerification DocumentVerification?
 
     @@map("users")
@@ -136,12 +137,13 @@ model SportRank {
 model File {
     id         Int        @id @default(autoincrement())
     userId     Int        @map("user_id")
-    user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user       User       @relation("UserFiles", fields: [userId], references: [id], onDelete: Cascade)
     storageKey String     @map("storage_key")
     mimeType   String     @map("mime_type")
     filename   String
     createdAt  DateTime   @default(now()) @map("created_at")
     documents  Document[]
+    avatars    User[]     @relation("UserAvatar")
 
     @@map("files")
 }
