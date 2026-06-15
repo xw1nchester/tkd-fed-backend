@@ -1,0 +1,16 @@
+db
+dist
+node_modules
+/generated/prisma
+uploads
+test
+.git
+.gitignore
+.dockerignore
+.env
+.env.example
+.eslintrc.js
+.prettierrc
+Dockerfile
+README.md
+docker-compose.yml
