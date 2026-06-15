@@ -17,7 +17,8 @@ import {
     Role,
     SportRank,
     Team,
-    User
+    User,
+    VerificationStatus
 } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
 import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
@@ -331,6 +332,8 @@ export class UserService {
         documents: (Document & { file: File })[];
         documentVerification: DocumentVerification;
     }) {
+        const { reverificationAt } = documentVerification;
+
         return {
             belt,
             sportRank,
@@ -343,10 +346,17 @@ export class UserService {
             documentVerification: documentVerification
                 ? {
                       id: documentVerification.id,
-                      status: documentVerification.status,
+                      status:
+                          documentVerification.status ==
+                              VerificationStatus.APPROVED &&
+                          reverificationAt &&
+                          new Date(reverificationAt) < new Date()
+                              ? VerificationStatus.PENDING
+                              : documentVerification.status,
                       comment: documentVerification.comment,
                       createdAt: documentVerification.createdAt,
-                      updatedAt: documentVerification.updatedAt
+                      updatedAt: documentVerification.updatedAt,
+                      reverificationAt
                   }
                 : null
         };
@@ -388,7 +398,8 @@ export class UserService {
             sportRankId,
             documents,
             status,
-            comment
+            comment,
+            reverificationAt
         }: Partial<AdminDetailedUserInfoRequestDto>
     ) {
         const beltExists = await this.beltService.exists(beltId);
@@ -426,11 +437,15 @@ export class UserService {
                 documentVerification: {
                     upsert: {
                         create: {
-                            status: 'PENDING'
+                            status: VerificationStatus.PENDING
                         },
                         update: {
-                            status: status ?? 'PENDING',
-                            comment: comment ?? ''
+                            status: status ?? VerificationStatus.PENDING,
+                            // TODO: оставлять старый коммент
+                            comment,
+                            reverificationAt: reverificationAt
+                                ? new Date(reverificationAt)
+                                : null
                         }
                     }
                 }

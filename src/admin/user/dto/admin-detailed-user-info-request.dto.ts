@@ -1,11 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { VerificationStatus } from '@prisma-client';
 import { DetailedUserInfoRequestDto } from '@user/dto/detailed-user-info-request.dto';
-import {
-    IsEnum,
-    IsOptional,
-    IsString,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class AdminDetailedUserInfoRequestDto extends DetailedUserInfoRequestDto {
     @ApiProperty({
@@ -19,4 +15,9 @@ export class AdminDetailedUserInfoRequestDto extends DetailedUserInfoRequestDto 
     @IsString()
     @IsOptional()
     comment: string;
+
+    @ApiProperty({ example: '2024-06-01' })
+    @IsDateString()
+    @IsOptional()
+    reverificationAt: string;
 }

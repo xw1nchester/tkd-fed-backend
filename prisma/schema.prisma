@@ -174,13 +174,14 @@ enum VerificationStatus {
 }
 
 model DocumentVerification {
-    id        Int                @id @default(autoincrement())
-    userId    Int                @unique @map("user_id")
-    user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-    status    VerificationStatus @default(PENDING)
-    comment   String?
-    createdAt DateTime           @default(now()) @map("created_at")
-    updatedAt DateTime           @updatedAt @map("updated_at")
+    id               Int                @id @default(autoincrement())
+    userId           Int                @unique @map("user_id")
+    user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+    status           VerificationStatus @default(PENDING)
+    comment          String?
+    createdAt        DateTime           @default(now()) @map("created_at")
+    updatedAt        DateTime           @updatedAt @map("updated_at")
+    reverificationAt DateTime?          @map("reverification_at")
 
     @@map("document_verifications")
 }

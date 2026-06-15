@@ -36,6 +36,9 @@ class DocumentVerificationDto {
 
     @ApiProperty({ example: '2026-06-10T06:21:37.632Z' })
     updatedAt: string;
+
+    @ApiProperty({ example: '2024-06-01' })
+    reverificationAt: string;
 }
 
 class UserDetailedResponseDto {
