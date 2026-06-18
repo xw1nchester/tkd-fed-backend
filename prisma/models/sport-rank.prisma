@@ -1,0 +1,7 @@
+model SportRank {
+    id    Int    @id @default(autoincrement())
+    name  String
+    users User[]
+
+    @@map("sport_ranks")
+}

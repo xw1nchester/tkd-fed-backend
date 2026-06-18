@@ -1,0 +1,9 @@
+model Token {
+    token      String   @unique
+    expiryDate DateTime @map("expiry_date")
+    userId     Int      @map("user_id")
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userAgent  String   @map("user_agent")
+
+    @@map("tokens")
+}

@@ -1,0 +1,20 @@
+enum DocumentType {
+    PASSPORT
+    BIRTH_CERTIFICATE
+    EDUCATION_CERTIFICATE
+    BELT_CERTIFICATE
+    SPORT_RANK_CERTIFICATE
+    OTHER
+}
+
+model Document {
+    id        Int          @id @default(autoincrement())
+    userId    Int          @map("user_id")
+    user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    type      DocumentType
+    fileId    Int          @map("file_id")
+    file      File         @relation(fields: [fileId], references: [id], onDelete: Cascade)
+    createdAt DateTime     @default(now()) @map("created_at")
+
+    @@map("documents")
+}

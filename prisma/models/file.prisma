@@ -1,0 +1,13 @@
+model File {
+    id         Int        @id @default(autoincrement())
+    userId     Int        @map("user_id")
+    user       User       @relation("UserFiles", fields: [userId], references: [id], onDelete: Cascade)
+    storageKey String     @map("storage_key")
+    mimeType   String     @map("mime_type")
+    filename   String
+    createdAt  DateTime   @default(now()) @map("created_at")
+    documents  Document[]
+    avatars    User[]     @relation("UserAvatar")
+
+    @@map("files")
+}
