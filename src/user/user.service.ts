@@ -32,6 +32,7 @@ import { FileService } from '@file/file.service';
 import { BeltService } from '@belt/belt.service';
 import { SportRankService } from '@sport-rank/sport-rank.service';
 import { AdminDetailedUserInfoRequestDto } from '@admin/user/dto/admin-detailed-user-info-request.dto';
+import { RatingRequestDto } from '@admin/user/dto/rating-request.dto';
 
 @Injectable()
 export class UserService {
@@ -123,6 +124,7 @@ export class UserService {
             birthDate: user.birthDate,
             gender: user.gender,
             isVerified: user.isVerified,
+            rating: user.rating,
             roles: user.roles,
             teams: user.teams
         };
@@ -481,5 +483,31 @@ export class UserService {
         }
 
         return await this.updateDetailedUserInfo(userId, dto);
+    }
+
+    async updateUserRating(
+        userId: number,
+        adminId: number,
+        { delta, reason }: RatingRequestDto
+    ) {
+        const user = await this.getById(userId);
+
+        if (user.rating + delta < 0) {
+            delta = -user.rating;
+        }
+
+        await this.prismaService.user.update({
+            where: { id: userId },
+            data: { rating: user.rating + delta }
+        });
+
+        await this.prismaService.ratingTransaction.create({
+            data: {
+                userId,
+                adminId,
+                delta,
+                reason
+            }
+        });
     }
 }

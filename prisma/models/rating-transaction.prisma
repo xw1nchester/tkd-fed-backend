@@ -1,0 +1,12 @@
+model RatingTransaction {
+    id        Int      @id @default(autoincrement())
+    userId    Int      @map("user_id")
+    user      User     @relation("UserRating", fields: [userId], references: [id])
+    adminId   Int      @map("admin_id")
+    admin     User     @relation("AdminRating", fields: [adminId], references: [id])
+    delta     Int
+    reason    String?
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@map("rating_transactions")
+}

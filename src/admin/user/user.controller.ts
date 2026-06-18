@@ -5,9 +5,11 @@ import {
     Controller,
     Delete,
     Get,
+    HttpCode,
     Param,
     ParseIntPipe,
     Patch,
+    Post,
     Query,
     UseGuards
 } from '@nestjs/common';
@@ -31,6 +33,7 @@ import { JwtPayload } from '@auth/interfaces';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
 import { AdminDetailedUserInfoRequestDto } from './dto/admin-detailed-user-info-request.dto';
 import { UserDetailedWrapperResponseDto } from '@user/dto/user-detailed-response.dto';
+import { RatingRequestDto } from './dto/rating-request.dto';
 
 @ApiTags('Admin')
 @UseGuards(RoleGuard)
@@ -115,5 +118,16 @@ export class UserController {
         @Body() dto: AdminDetailedUserInfoRequestDto
     ) {
         return await this.userService.updateDetailedUserInfo(id, dto);
+    }
+
+    @Post(':id/rating')
+    @HttpCode(200)
+    @ApiBearerAuth()
+    async updateUserRating(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: JwtPayload,
+        @Body() dto: RatingRequestDto
+    ) {
+        await this.userService.updateUserRating(id, user.id, dto);
     }
 }

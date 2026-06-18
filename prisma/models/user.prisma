@@ -4,35 +4,38 @@ enum Gender {
 }
 
 model User {
-    id                   Int                   @id @default(autoincrement())
-    email                String                @unique
-    avatarId             Int?                  @map("avatar_id")
-    avatar               File?                 @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: Cascade)
-    firstName            String?               @map("first_name")
-    lastName             String?               @map("last_name")
-    middleName           String?               @map("middle_name")
-    birthDate            DateTime?             @map("birth_date")
-    gender               Gender                @default(MALE)
-    password             String?
-    isVerified           Boolean               @default(false) @map("is_verified")
-    createdAt            DateTime              @default(now()) @map("created_at")
-    updatedAt            DateTime              @updatedAt @map("updated_at")
-    roles                Role[]
-    tokens               Token[]
-    codes                Code[]
-    invitedById          Int?                  @map("invited_by_id")
-    invitedBy            User?                 @relation("UserInvitations", fields: [invitedById], references: [id])
-    invitedUsers         User[]                @relation("UserInvitations")
-    inviteTokens         InviteToken[]
-    teams                Team[]
-    ownedTeams           Team[]                @relation("TeamCreator")
-    beltId               Int?                  @map("belt_id")
-    belt                 Belt?                 @relation(fields: [beltId], references: [id])
-    sportRankId          Int?                  @map("sport_rank_id")
-    sportRank            SportRank?            @relation(fields: [sportRankId], references: [id])
-    documents            Document[]
-    files                File[]                @relation("UserFiles")
-    documentVerification DocumentVerification?
+    id                       Int                   @id @default(autoincrement())
+    email                    String                @unique
+    avatarId                 Int?                  @map("avatar_id")
+    avatar                   File?                 @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: Cascade)
+    firstName                String?               @map("first_name")
+    lastName                 String?               @map("last_name")
+    middleName               String?               @map("middle_name")
+    birthDate                DateTime?             @map("birth_date")
+    gender                   Gender                @default(MALE)
+    password                 String?
+    isVerified               Boolean               @default(false) @map("is_verified")
+    rating                   Int                   @default(0)
+    createdAt                DateTime              @default(now()) @map("created_at")
+    updatedAt                DateTime              @updatedAt @map("updated_at")
+    roles                    Role[]
+    tokens                   Token[]
+    codes                    Code[]
+    invitedById              Int?                  @map("invited_by_id")
+    invitedBy                User?                 @relation("UserInvitations", fields: [invitedById], references: [id])
+    invitedUsers             User[]                @relation("UserInvitations")
+    inviteTokens             InviteToken[]
+    teams                    Team[]
+    ownedTeams               Team[]                @relation("TeamCreator")
+    beltId                   Int?                  @map("belt_id")
+    belt                     Belt?                 @relation(fields: [beltId], references: [id])
+    sportRankId              Int?                  @map("sport_rank_id")
+    sportRank                SportRank?            @relation(fields: [sportRankId], references: [id])
+    documents                Document[]
+    files                    File[]                @relation("UserFiles")
+    documentVerification     DocumentVerification?
+    ratingTransactions       RatingTransaction[]   @relation("UserRating")
+    issuedRatingTransactions RatingTransaction[]   @relation("AdminRating")
 
     @@map("users")
 }

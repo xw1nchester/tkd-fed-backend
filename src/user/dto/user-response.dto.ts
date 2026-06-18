@@ -34,6 +34,9 @@ export class UserResponseDto {
     @ApiProperty({ example: true })
     isVerified: boolean;
 
+    @ApiProperty({ default: 2500 })
+    rating: number;
+
     @ApiProperty({ type: RoleDto })
     role: RoleDto;
 }
