@@ -1,18 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-class TokenCreatorDto {
-    @ApiProperty({ example: 1 })
-    id: number;
-
-    @ApiProperty({ example: 'Дружков' })
-    lastName: string;
-
-    @ApiProperty({ example: 'Василий' })
-    firstName: string;
-
-    @ApiProperty({ example: 'Александрович' })
-    middleName: string;
-}
+import { UserBasicResponseDto } from '@user/dto/user-response.dto';
 
 class InviteTokenResponseDto {
     @ApiProperty({ example: 1 })
@@ -24,8 +11,8 @@ class InviteTokenResponseDto {
     @ApiProperty({ example: '2026-02-28T17:00:00.000Z' })
     createdAt: string;
 
-    @ApiProperty({ type: TokenCreatorDto })
-    creator: TokenCreatorDto;
+    @ApiProperty({ type: UserBasicResponseDto })
+    creator: UserBasicResponseDto;
 }
 
 export class InviteTokenWrapperResponseDto {

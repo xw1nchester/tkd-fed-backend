@@ -3,7 +3,12 @@ import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class RatingRequestDto {
-    @ApiProperty({ default: 2500 })
+    @ApiProperty({ example: 1 })
+    @IsNumber()
+    @Transform(({ value }) => Number(value))
+    userId: number;
+
+    @ApiProperty({ example: 2500 })
     @IsNumber()
     @Transform(({ value }) => Number(value))
     delta: number;

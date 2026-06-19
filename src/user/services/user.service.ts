@@ -21,18 +21,17 @@ import {
     VerificationStatus
 } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
-import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
+import { BasicUserEditRequestDto } from '../dto/basic-user-edit-request.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
 import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
 import { RegisterRequestDto } from '@auth/dto/register-request.dto';
 import { AdminUserQueryDto } from '@admin/user/dto/admin-user-query.dto';
-import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
+import { DetailedUserInfoRequestDto } from '../dto/detailed-user-info-request.dto';
 import { FileService } from '@file/file.service';
 import { BeltService } from '@belt/belt.service';
 import { SportRankService } from '@sport-rank/sport-rank.service';
 import { AdminDetailedUserInfoRequestDto } from '@admin/user/dto/admin-detailed-user-info-request.dto';
-import { RatingRequestDto } from '@admin/user/dto/rating-request.dto';
 
 @Injectable()
 export class UserService {
@@ -483,31 +482,5 @@ export class UserService {
         }
 
         return await this.updateDetailedUserInfo(userId, dto);
-    }
-
-    async updateUserRating(
-        userId: number,
-        adminId: number,
-        { delta, reason }: RatingRequestDto
-    ) {
-        const user = await this.getById(userId);
-
-        if (user.rating + delta < 0) {
-            delta = -user.rating;
-        }
-
-        await this.prismaService.user.update({
-            where: { id: userId },
-            data: { rating: user.rating + delta }
-        });
-
-        await this.prismaService.ratingTransaction.create({
-            data: {
-                userId,
-                adminId,
-                delta,
-                reason
-            }
-        });
     }
 }

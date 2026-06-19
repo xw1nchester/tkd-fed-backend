@@ -14,7 +14,7 @@ import { CodeService } from '@code/code.service';
 import { MailService } from '@mail/mail.service';
 import { Role, User } from '@prisma-client';
 import { PrismaService } from '@prisma/prisma.service';
-import { UserService } from '@user/user.service';
+import { UserService } from '@user/services/user.service';
 
 import { LoginRequestDto } from './dto/login-request.dto';
 import { RegisterRequestDto } from './dto/register-request.dto';

@@ -58,3 +58,17 @@ export class UserWrapperResponseDto {
     @ApiProperty({ type: UserResponseDto })
     user: UserResponseDto;
 }
+
+export class UserBasicResponseDto {
+    @ApiProperty({ example: 1 })
+    id: number;
+
+    @ApiProperty({ example: 'Дружков' })
+    lastName: string;
+
+    @ApiProperty({ example: 'Василий' })
+    firstName: string;
+
+    @ApiProperty({ example: 'Александрович' })
+    middleName: string;
+}

@@ -10,7 +10,7 @@ import {
     UseGuards
 } from '@nestjs/common';
 
-import { UserService } from './user.service';
+import { UserService } from './services/user.service';
 import { CurrentUser, Public, Role } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
 import {

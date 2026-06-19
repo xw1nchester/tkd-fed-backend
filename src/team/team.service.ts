@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { TeamCreateRequestDto } from './dto/team-create-request.dto';
-import { UserService } from '@user/user.service';
+import { UserService } from '@user/services/user.service';
 import { Prisma, Team } from '@prisma-client';
 import { ConfigService } from '@nestjs/config';
 import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';

@@ -5,11 +5,9 @@ import {
     Controller,
     Delete,
     Get,
-    HttpCode,
     Param,
     ParseIntPipe,
     Patch,
-    Post,
     Query,
     UseGuards
 } from '@nestjs/common';
@@ -26,21 +24,24 @@ import {
     UserResponseDto,
     UserWrapperResponseDto
 } from '@user/dto/user-response.dto';
-import { UserService } from '@user/user.service';
-import { UserEditRequestDto } from './dto/user-edit-request.dto';
+import { UserService } from '@user/services/user.service';
+import { UserEditRequestDto } from '../dto/user-edit-request.dto';
 import { AvatarRequestDto } from '@user/dto/avatar-request.dto';
 import { JwtPayload } from '@auth/interfaces';
-import { AdminUserQueryDto } from './dto/admin-user-query.dto';
-import { AdminDetailedUserInfoRequestDto } from './dto/admin-detailed-user-info-request.dto';
+import { AdminUserQueryDto } from '../dto/admin-user-query.dto';
+import { AdminDetailedUserInfoRequestDto } from '../dto/admin-detailed-user-info-request.dto';
 import { UserDetailedWrapperResponseDto } from '@user/dto/user-detailed-response.dto';
-import { RatingRequestDto } from './dto/rating-request.dto';
+import { RatingService } from '@user/services/rating.service';
 
 @ApiTags('Admin')
 @UseGuards(RoleGuard)
 @Role(RoleEnum.ADMIN)
 @Controller('admin/user')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        private readonly ratingService: RatingService
+    ) {}
 
     @Get()
     @ApiExtraModels(PaginationResponseDto, UserResponseDto)
@@ -118,16 +119,5 @@ export class UserController {
         @Body() dto: AdminDetailedUserInfoRequestDto
     ) {
         return await this.userService.updateDetailedUserInfo(id, dto);
-    }
-
-    @Post(':id/rating')
-    @HttpCode(200)
-    @ApiBearerAuth()
-    async updateUserRating(
-        @Param('id', ParseIntPipe) id: number,
-        @CurrentUser() user: JwtPayload,
-        @Body() dto: RatingRequestDto
-    ) {
-        await this.userService.updateUserRating(id, user.id, dto);
     }
 }
