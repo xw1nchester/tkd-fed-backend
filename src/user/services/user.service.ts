@@ -32,6 +32,7 @@ import { FileService } from '@file/file.service';
 import { BeltService } from '@belt/belt.service';
 import { SportRankService } from '@sport-rank/sport-rank.service';
 import { AdminDetailedUserInfoRequestDto } from '@admin/user/dto/admin-detailed-user-info-request.dto';
+import { OrderOption, SortOption } from '@user/dto/user-query.dto';
 
 @Injectable()
 export class UserService {
@@ -244,7 +245,16 @@ export class UserService {
         invitedById?: number;
         includeTeams?: boolean;
     }) {
-        const { page, limit, search, teamId, roleId, excludedTeamId } = query;
+        let {
+            page,
+            limit,
+            search,
+            sortBy,
+            order,
+            teamId,
+            roleId,
+            excludedTeamId
+        } = query;
         const skip = (page - 1) * limit;
 
         const where: Prisma.UserWhereInput = {
@@ -303,6 +313,9 @@ export class UserService {
             })
         };
 
+        sortBy = sortBy ?? SortOption.CREATED_AT;
+        order = order ?? OrderOption.DESC;
+
         const data = await this.prismaService.user.findMany({
             where,
             include: {
@@ -312,7 +325,9 @@ export class UserService {
                     teams: { select: { id: true, name: true } }
                 })
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: {
+                [sortBy]: order
+            },
             take: limit,
             skip
         });
