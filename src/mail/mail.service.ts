@@ -35,13 +35,7 @@ export class MailService {
         }
     }
 
-    async sendVerificationCode({
-        to,
-        code
-    }: {
-        to: string;
-        code: string
-    }) {
+    async sendVerificationCode({ to, code }: { to: string; code: string }) {
         await this.sendEmail({
             subject: 'Подтверждение почты',
             to,
@@ -52,13 +46,7 @@ export class MailService {
         });
     }
 
-    async sendPasswordRecoveryCode({
-        to,
-        code
-    }: {
-        to: string;
-        code: string
-    }) {
+    async sendPasswordRecoveryCode({ to, code }: { to: string; code: string }) {
         await this.sendEmail({
             subject: 'Подтверждение почты',
             to,

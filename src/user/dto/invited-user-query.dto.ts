@@ -14,7 +14,7 @@ export class InvitedUserQueryDto extends UserQueryDto {
     @IsInt()
     @Expose({ name: 'team_id' })
     teamId: number;
-    
+
     @ApiProperty({
         name: 'excluded_team_id',
         example: 1,

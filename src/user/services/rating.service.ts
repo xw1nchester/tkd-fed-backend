@@ -104,7 +104,7 @@ export class RatingService {
             where: { id: userId },
             data: {
                 rating: {
-                    increment: delta - oldDelta,
+                    increment: delta - oldDelta
                 }
             }
         });

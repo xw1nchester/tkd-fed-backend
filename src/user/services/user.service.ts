@@ -362,8 +362,6 @@ export class UserService {
         documents: (Document & { file: File })[];
         documentVerification: DocumentVerification;
     }) {
-        const { reverificationAt } = documentVerification;
-
         return {
             belt,
             sportRank,
@@ -379,14 +377,15 @@ export class UserService {
                       status:
                           documentVerification.status ==
                               VerificationStatus.APPROVED &&
-                          reverificationAt &&
-                          new Date(reverificationAt) < new Date()
+                          documentVerification.reverificationAt &&
+                          new Date(documentVerification.reverificationAt) <
+                              new Date()
                               ? VerificationStatus.PENDING
                               : documentVerification.status,
                       comment: documentVerification.comment,
                       createdAt: documentVerification.createdAt,
                       updatedAt: documentVerification.updatedAt,
-                      reverificationAt
+                      reverificationAt: documentVerification.reverificationAt
                   }
                 : null
         };

@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DocumentType } from '@prisma-client';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsEnum, IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import {
+    IsArray,
+    IsEnum,
+    IsNumber,
+    IsOptional,
+    ValidateNested
+} from 'class-validator';
 
 class DocumentRequestDto {
     @ApiProperty({
@@ -10,7 +16,7 @@ class DocumentRequestDto {
     })
     @IsEnum(DocumentType)
     type: DocumentType;
-    
+
     @ApiProperty({ example: 1 })
     @IsNumber()
     @Transform(({ value }) => Number(value))

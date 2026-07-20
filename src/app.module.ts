@@ -19,6 +19,7 @@ import { TeamModule } from './team/team.module';
 import { BeltModule } from './belt/belt.module';
 import { SportRankModule } from './sport-rank/sport-rank.module';
 import { FileModule } from './file/file.module';
+import { TournamentModule } from './tournament/tournament.module';
 
 @Module({
     imports: [
@@ -38,7 +39,8 @@ import { FileModule } from './file/file.module';
         TeamModule,
         BeltModule,
         SportRankModule,
-        FileModule
+        FileModule,
+        TournamentModule
     ],
     controllers: [AppController],
     providers: [

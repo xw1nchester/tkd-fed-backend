@@ -18,7 +18,11 @@ import { Cookie, CurrentUser, Public, UserAgent } from './decorators';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { JwtPayload } from './interfaces';
 import { CodeDto } from './dto/code.dto';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiCreatedResponse,
+    ApiOkResponse
+} from '@nestjs/swagger';
 import { AuthResponseDto, TokenResponseDto } from './dto/auth-response.dto';
 import { RegisterRequestDto } from './dto/register-request.dto';
 import { RecoveryRequestDto } from './dto/recovery-request.dto';
@@ -118,10 +122,7 @@ export class AuthController {
 
     @Post('verify')
     @ApiBearerAuth()
-    async verify(
-        @Body() { code }: CodeDto,
-        @CurrentUser() user: JwtPayload
-    ) {
+    async verify(@Body() { code }: CodeDto, @CurrentUser() user: JwtPayload) {
         await this.authService.verify(code, user.id);
 
         return HttpStatus.OK;

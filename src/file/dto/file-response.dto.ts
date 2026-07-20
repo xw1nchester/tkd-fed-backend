@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class FileDto {
     @ApiProperty({ example: 1 })
@@ -10,7 +10,8 @@ export class FileDto {
     key: string;
 
     @ApiProperty({
-        example: 'http://localhost:8080/static/64c43ba9-b062-4875-a989-291948999b4e.jpeg'
+        example:
+            'http://localhost:8080/static/64c43ba9-b062-4875-a989-291948999b4e.jpeg'
     })
     url: string;
 

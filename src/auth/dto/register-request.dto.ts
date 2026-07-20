@@ -41,7 +41,7 @@ export class RegisterRequestDto {
         example: Gender.MALE
     })
     @IsEnum(Gender)
-    gender: Gender
+    gender: Gender;
 
     @ApiProperty({ example: 'StrongPass123!', minLength: 8 })
     @IsString()

@@ -6,8 +6,6 @@ import { Reflector } from '@nestjs/core';
 import { Role } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
 
-
-
 @Injectable()
 export class RoleGuard implements CanActivate {
     constructor(private readonly reflector: Reflector) {}

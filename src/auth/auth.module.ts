@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
-
 import { CodeModule } from '@code/code.module';
 import { MailModule } from '@mail/mail.module';
 import { UserModule } from '@user/user.module';
@@ -14,7 +13,6 @@ import { GUARDS } from './guards';
 import { STRATEGIES } from './strategies';
 import { InviteTokenModule } from '@invite-token/invite-token.module';
 
-
 @Module({
     imports: [
         PassportModule,
@@ -22,7 +20,7 @@ import { InviteTokenModule } from '@invite-token/invite-token.module';
         UserModule,
         CodeModule,
         MailModule,
-        InviteTokenModule,
+        InviteTokenModule
     ],
     controllers: [AuthController],
     providers: [AuthService, ...STRATEGIES, ...GUARDS]

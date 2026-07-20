@@ -1,0 +1,23 @@
+model Tournament {
+    id              Int      @id @default(autoincrement())
+    name            String
+    logo            String?
+    banner          String?
+    startDate       DateTime @map("start_date")
+    endDate         DateTime @map("end_date")
+    maxParticipants Int?     @map("max_participants")
+    city            String
+    address         String
+    organizer       String?
+    chiefSecretary  String?  @map("chief_secretary")
+    chiefJudge      String?  @map("chief_judge")
+    contacts        String?
+    description     String?
+    isPublished     Boolean  @default(false) @map("is_published")
+    creatorId       Int      @map("creator_id")
+    creator         User     @relation("TournamentCreator", fields: [creatorId], references: [id])
+    createdAt       DateTime @default(now()) @map("created_at")
+    updatedAt       DateTime @updatedAt @map("updated_at")
+
+    @@map("tournaments")
+}
