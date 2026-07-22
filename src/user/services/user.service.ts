@@ -253,7 +253,8 @@ export class UserService {
             order,
             teamId,
             roleId,
-            excludedTeamId
+            excludedTeamId,
+            isTrainer
         } = query;
         const skip = (page - 1) * limit;
 
@@ -297,6 +298,13 @@ export class UserService {
                     }
                 }
             }),
+            ...(excludedTeamId && {
+                teams: {
+                    none: {
+                        id: excludedTeamId
+                    }
+                }
+            }),
             ...(roleId && {
                 roles: {
                     some: {
@@ -304,10 +312,10 @@ export class UserService {
                     }
                 }
             }),
-            ...(excludedTeamId && {
-                teams: {
-                    none: {
-                        id: excludedTeamId
+            ...(isTrainer  && {
+                roles: {
+                    some: {
+                        name: RoleEnum.TRAINER
                     }
                 }
             })

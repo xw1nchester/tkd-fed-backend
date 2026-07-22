@@ -1,3 +1,6 @@
-import { Reflector } from '@nestjs/core';
+import { SetMetadata } from '@nestjs/common';
+import { RoleEnum } from '@shared/enums/role.enum';
 
-export const Role = Reflector.createDecorator<string>();
+export const ROLE_KEY = 'roles';
+
+export const Role = (...roles: RoleEnum[]) => SetMetadata(ROLE_KEY, roles);

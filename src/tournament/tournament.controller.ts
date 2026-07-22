@@ -35,7 +35,7 @@ export class TournamentController {
     constructor(private readonly tournamentService: TournamentService) {}
 
     @UseGuards(RoleGuard)
-    @Role(RoleEnum.TRAINER)
+    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
     @Post()
     @ApiBearerAuth()
     @ApiOkResponse({ type: TournamentWrapperResponseDto })
@@ -73,7 +73,7 @@ export class TournamentController {
     ) {
         return this.tournamentService.findAll({
             query,
-            requesterUserId: user?.id
+            requesterUser: user
         });
     }
 
@@ -87,21 +87,25 @@ export class TournamentController {
     ) {
         return this.tournamentService.getDtoById({
             id,
-            requesterUserId: user?.id
+            requesterUser: user
         });
     }
 
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
     @Patch(':id')
     @ApiBearerAuth()
     @ApiOkResponse({ type: TournamentWrapperResponseDto })
     async update(
         @Param('id', ParseIntPipe) id: number,
-        @Body() dto: TournamentRequestDto,
-        @CurrentUser() user: JwtPayload
+        @CurrentUser() user: JwtPayload,
+        @Body() dto: TournamentRequestDto
     ) {
-        return this.tournamentService.update(id, user.id, dto);
+        return this.tournamentService.update(id, user, dto);
     }
 
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOkResponse({ type: TournamentWrapperResponseDto })
@@ -109,6 +113,6 @@ export class TournamentController {
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: JwtPayload
     ) {
-        return this.tournamentService.remove(id, user.id);
+        return this.tournamentService.remove(id, user);
     }
 }

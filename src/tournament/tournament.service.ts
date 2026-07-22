@@ -9,6 +9,8 @@ import { TournamentRequestDto } from './dto/tournament-request.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
 import { TournamentQueryDto } from './dto/tournament-query.dto';
 import { TournamentStatus } from './enums/tournament-status.enum';
+import { JwtPayload } from '@auth/interfaces';
+import { RoleEnum } from '@shared/enums/role.enum';
 
 @Injectable()
 export class TournamentService {
@@ -56,31 +58,15 @@ export class TournamentService {
 
     async getDtoById({
         id,
-        requesterUserId
+        requesterUser
     }: {
         id: number;
-        requesterUserId?: number;
+        requesterUser?: JwtPayload;
     }) {
-        const where: Prisma.TournamentWhereInput =
-            requesterUserId !== undefined
-                ? {
-                      id,
-                      OR: [
-                          {
-                              isPublished: true
-                          },
-                          {
-                              creatorId: requesterUserId
-                          }
-                      ]
-                  }
-                : {
-                      id,
-                      isPublished: true
-                  };
+        const accessWhere = this.getAccessWhere(requesterUser);
 
         const tournament = await this.prismaService.tournament.findFirst({
-            where
+            where: { id, ...accessWhere }
         });
 
         if (!tournament) {
@@ -111,31 +97,46 @@ export class TournamentService {
         return { tournament: this.createDto(tournament) };
     }
 
+    private getAccessWhere(user?: JwtPayload): Prisma.TournamentWhereInput {
+        if (!user) {
+            return {
+                isPublished: true
+            };
+        }
+
+        if (user.roles.includes(RoleEnum.SECRETARY)) {
+            return {};
+        }
+
+        if (user.roles.includes(RoleEnum.TRAINER)) {
+            return {
+                OR: [
+                    {
+                        isPublished: true
+                    },
+                    {
+                        creatorId: user.id
+                    }
+                ]
+            };
+        }
+
+        return {
+            isPublished: true
+        };
+    }
+
     async findAll({
         query,
-        requesterUserId
+        requesterUser
     }: {
         query: TournamentQueryDto;
-        requesterUserId?: number;
+        requesterUser?: JwtPayload;
     }) {
         const { page, limit, isPublished, my } = query;
         const skip = (page - 1) * limit;
 
-        const accessWhere: Prisma.TournamentWhereInput =
-            requesterUserId !== undefined
-                ? {
-                      OR: [
-                          {
-                              isPublished: true
-                          },
-                          {
-                              creatorId: requesterUserId
-                          }
-                      ]
-                  }
-                : {
-                      isPublished: true
-                  };
+        const accessWhere = this.getAccessWhere(requesterUser);
 
         const filterWhere: Prisma.TournamentWhereInput = {};
 
@@ -143,8 +144,8 @@ export class TournamentService {
             filterWhere.isPublished = isPublished;
         }
 
-        if (my && requesterUserId !== undefined) {
-            filterWhere.creatorId = requesterUserId;
+        if (my && requesterUser) {
+            filterWhere.creatorId = requesterUser.id;
         }
 
         const where: Prisma.TournamentWhereInput = {
@@ -173,15 +174,24 @@ export class TournamentService {
         );
     }
 
-    private ensureCreator(tournament: Tournament, creatorId: number) {
-        if (tournament.creatorId !== creatorId) {
-            throw new NotFoundException();
+    private ensureCanModify(tournament: Tournament, user: JwtPayload) {
+        if (user.roles.includes(RoleEnum.SECRETARY)) {
+            return;
         }
+
+        if (
+            user.roles.includes(RoleEnum.TRAINER) &&
+            tournament.creatorId === user.id
+        ) {
+            return;
+        }
+
+        throw new NotFoundException();
     }
 
-    async update(id: number, creatorId: number, dto: TournamentRequestDto) {
+    async update(id: number, user: JwtPayload, dto: TournamentRequestDto) {
         const existingTournament = await this.getById(id);
-        this.ensureCreator(existingTournament, creatorId);
+        this.ensureCanModify(existingTournament, user);
 
         const startDate = new Date(dto.startDate);
         const endDate = new Date(dto.endDate);
@@ -196,11 +206,11 @@ export class TournamentService {
         return { tournament: this.createDto(tournament) };
     }
 
-    async remove(id: number, creatorId: number) {
-        const tournament = await this.getById(id);
-        this.ensureCreator(tournament, creatorId);
+    async remove(id: number, user: JwtPayload) {
+        const existingTournament = await this.getById(id);
+        this.ensureCanModify(existingTournament, user);
 
         await this.prismaService.tournament.delete({ where: { id } });
-        return { tournament: this.createDto(tournament) };
+        return { tournament: this.createDto(existingTournament) };
     }
 }

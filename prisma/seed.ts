@@ -13,7 +13,8 @@ async function main() {
             id: 4,
             name: 'chairman',
             description: 'Председатель аттестационной комиссии'
-        }
+        },
+        { id: 5, name: 'secretary', description: 'Секретарь' }
     ];
 
     console.log(`Starting seeding roles...`);

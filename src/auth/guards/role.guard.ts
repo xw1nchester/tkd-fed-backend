@@ -3,8 +3,9 @@ import { Observable } from 'rxjs';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { Role } from '@auth/decorators';
+import { ROLE_KEY } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
+import { RoleEnum } from '@shared/enums/role.enum';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -15,10 +16,15 @@ export class RoleGuard implements CanActivate {
     ): boolean | Promise<boolean> | Observable<boolean> {
         const request = ctx.switchToHttp().getRequest();
         const user = request.user as JwtPayload;
-        const requiredRole =
-            this.reflector.get(Role, ctx.getHandler()) ??
-            this.reflector.get(Role, ctx.getClass());
+        const requiredRoles = this.reflector.getAllAndOverride<RoleEnum[]>(
+            ROLE_KEY,
+            [ctx.getHandler(), ctx.getClass()]
+        );
 
-        return user.roles.includes(requiredRole);
+        if (!requiredRoles?.length) {
+            return true;
+        }
+
+        return requiredRoles.some(role => user.roles.includes(role));
     }
 }
