@@ -60,7 +60,7 @@ export class TeamService {
     }
 
     async create(dto: TeamCreateRequestDto, creatorId: number) {
-        await this.userService.validateInvitedUserIds(creatorId, dto.memberIds);
+        await this.userService.validateAndGetInvitedUserIds(creatorId, dto.memberIds);
 
         const createdTeam = await this.prismaService.team.create({
             data: {
@@ -148,7 +148,7 @@ export class TeamService {
             throw new ForbiddenException();
         }
 
-        await this.userService.validateInvitedUserIds(creatorId, memberIds);
+        await this.userService.validateAndGetInvitedUserIds(creatorId, memberIds);
 
         await this.prismaService.team.update({
             where: {

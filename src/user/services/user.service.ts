@@ -312,7 +312,7 @@ export class UserService {
                     }
                 }
             }),
-            ...(isTrainer  && {
+            ...(isTrainer && {
                 roles: {
                     some: {
                         name: RoleEnum.TRAINER
@@ -349,14 +349,17 @@ export class UserService {
         return new PaginationDto(dtos, totalCount, page, limit);
     }
 
-    async validateInvitedUserIds(invitedById: number, userIds: number[]) {
+    async validateAndGetInvitedUserIds(invitedById: number, userIds: number[]) {
         const users = await this.prismaService.user.findMany({
-            where: { invitedById, id: { in: userIds } }
+            where: { invitedById, id: { in: userIds } },
+            include: { belt: true }
         });
 
         if (userIds.length != users.length) {
             throw new NotFoundException('Пользователь не найден');
         }
+
+        return users;
     }
 
     createUserDetailedDto({

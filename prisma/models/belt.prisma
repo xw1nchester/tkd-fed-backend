@@ -4,14 +4,15 @@ enum BeltRankType {
 }
 
 model Belt {
-    id          Int          @id @default(autoincrement())
-    name        String
-    color       String
-    stripeColor String?      @map("stripe_color")
-    rankType    BeltRankType @map("rank_type")
-    rankNumber  Int          @map("rank_number")
-    sortOrder   Int          @map("sort_order")
-    users       User[]
+    id                      Int                      @id @default(autoincrement())
+    name                    String
+    color                   String
+    stripeColor             String?                  @map("stripe_color")
+    rankType                BeltRankType             @map("rank_type")
+    rankNumber              Int                      @map("rank_number")
+    sortOrder               Int                      @map("sort_order")
+    users                   User[]
+    requestedInAttestations BeltAttestationAthlete[] @relation("RequestedBelt")
 
     @@map("belts")
 }

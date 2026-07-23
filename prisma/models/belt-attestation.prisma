@@ -1,0 +1,27 @@
+model BeltAttestationRequest {
+    id              Int                      @id @default(autoincrement())
+    trainerId       Int                      @map("trainer_id")
+    trainer         User                     @relation("TrainerAttestationRequests", fields: [trainerId], references: [id])
+    chairmanId      Int?                     @map("chairman_id")
+    chairman        User?                    @relation("ChairmanAttestationRequests", fields: [chairmanId], references: [id])
+    attestationDate DateTime                 @map("attestation_date")
+    isAccepted      Boolean                  @default(false) @map("is_accepted")
+    createdAt       DateTime                 @default(now()) @map("created_at")
+    updatedAt       DateTime                 @updatedAt @map("updated_at")
+    athletes        BeltAttestationAthlete[]
+
+    @@map("belt_attestation_requests")
+}
+
+model BeltAttestationAthlete {
+    id              Int                    @id @default(autoincrement())
+    requestId       Int                    @map("request_id")
+    request         BeltAttestationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+    athleteId       Int                    @map("athlete_id")
+    athlete         User                   @relation(fields: [athleteId], references: [id])
+    requestedBeltId Int                    @map("requested_belt_id")
+    requestedBelt   Belt                   @relation("RequestedBelt", fields: [requestedBeltId], references: [id])
+
+    @@unique([requestId, athleteId])
+    @@map("belt_attestation_athletes")
+}

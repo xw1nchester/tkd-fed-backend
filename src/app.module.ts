@@ -20,6 +20,7 @@ import { BeltModule } from './belt/belt.module';
 import { SportRankModule } from './sport-rank/sport-rank.module';
 import { FileModule } from './file/file.module';
 import { TournamentModule } from './tournament/tournament.module';
+import { BeltAttestationModule } from './belt-attestation/belt-attestation.module';
 
 @Module({
     imports: [
@@ -40,7 +41,8 @@ import { TournamentModule } from './tournament/tournament.module';
         BeltModule,
         SportRankModule,
         FileModule,
-        TournamentModule
+        TournamentModule,
+        BeltAttestationModule
     ],
     controllers: [AppController],
     providers: [
