@@ -9,10 +9,16 @@ export class TournamentResponseDto {
     @ApiProperty({ example: 'Открытый кубок города' })
     name: string;
 
-    @ApiPropertyOptional({ example: 'https://example.com/logo.png', nullable: true })
+    @ApiPropertyOptional({
+        example: 'https://example.com/logo.png',
+        nullable: true
+    })
     logo: string | null;
 
-    @ApiPropertyOptional({ example: 'https://example.com/banner.png', nullable: true })
+    @ApiPropertyOptional({
+        example: 'https://example.com/banner.png',
+        nullable: true
+    })
     banner: string | null;
 
     @ApiProperty({ example: '2026-08-15T09:00:00.000Z' })
@@ -54,7 +60,8 @@ export class TournamentResponseDto {
     @ApiProperty({
         enum: TournamentStatus,
         example: TournamentStatus.UPCOMING,
-        description: 'UPCOMING - идет набор; ONGOING - в процессе; FINISHED - окончен',
+        description:
+            'UPCOMING - идет набор; ONGOING - в процессе; FINISHED - окончен'
     })
     @IsEnum(TournamentStatus)
     status?: TournamentStatus;

@@ -17,11 +17,7 @@ import { JwtPayload } from '@auth/interfaces';
 import { RoleGuard } from '@auth/guards/role.guard';
 import { RoleEnum } from '@shared/enums/role.enum';
 import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
-import {
-    ApiExtraModels,
-    ApiOkResponse,
-    getSchemaPath
-} from '@nestjs/swagger';
+import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 import {
     BeltAttestationAthleteResponseDto,
     BeltAttestationResponseDto,

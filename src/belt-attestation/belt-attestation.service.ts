@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { UserService } from '@user/services/user.service';
 import { BeltAttestationRequestDto } from './dto/belt-attestation-request.dto';
@@ -40,10 +44,11 @@ export class BeltAttestationService {
     }
 
     async getById(id: number) {
-        const request = await this.prismaService.beltAttestationRequest.findFirst({
-            where: { id },
-            include: { trainer: { include: { roles: true } } }
-        });
+        const request =
+            await this.prismaService.beltAttestationRequest.findFirst({
+                where: { id },
+                include: { trainer: { include: { roles: true } } }
+            });
 
         if (!request) {
             throw new NotFoundException('Заявка на аттестацию не найдена');
@@ -52,7 +57,9 @@ export class BeltAttestationService {
         return request;
     }
 
-    private getAccessWhere(user: JwtPayload): Prisma.BeltAttestationRequestWhereInput {
+    private getAccessWhere(
+        user: JwtPayload
+    ): Prisma.BeltAttestationRequestWhereInput {
         if (user.roles.includes(RoleEnum.CHAIRMAN)) {
             return {};
         }
@@ -82,10 +89,11 @@ export class BeltAttestationService {
         id: number;
         requesterUser: JwtPayload;
     }) {
-        const request = await this.prismaService.beltAttestationRequest.findFirst({
-            where: { id, ...this.getAccessWhere(requesterUser) },
-            include: { trainer: { include: { roles: true } } }
-        });
+        const request =
+            await this.prismaService.beltAttestationRequest.findFirst({
+                where: { id, ...this.getAccessWhere(requesterUser) },
+                include: { trainer: { include: { roles: true } } }
+            });
 
         if (!request) {
             throw new NotFoundException('Заявка на аттестацию не найдена');
@@ -172,7 +180,7 @@ export class BeltAttestationService {
 
     private createAthleteDto(
         athlete: BeltAttestationAthlete & {
-            athlete: User & { roles: Role[], belt: Belt };
+            athlete: User & { roles: Role[]; belt: Belt };
             requestedBelt: Belt;
         }
     ) {
@@ -217,16 +225,39 @@ export class BeltAttestationService {
         );
     }
 
-    // TODO: менять пояса в бд
     async accept(id: number, chairman: JwtPayload) {
-        await this.getById(id);
+        await this.prismaService.$transaction(async tx => {
+            const request = await tx.beltAttestationRequest.findFirst({
+                where: { id },
+                include: { athletes: true }
+            });
 
-        await this.prismaService.beltAttestationRequest.update({
-            where: { id },
-            data: {
-                isAccepted: true,
-                chairmanId: chairman.id
+            if (!request) {
+                throw new NotFoundException('Заявка на аттестацию не найдена');
             }
+
+            if (request.isAccepted) {
+                throw new BadRequestException('Заявка уже принята');
+            }
+
+            await tx.beltAttestationRequest.update({
+                where: { id },
+                data: {
+                    isAccepted: true,
+                    chairmanId: chairman.id
+                }
+            });
+
+            await Promise.all(
+                request.athletes.map(athlete =>
+                    tx.user.update({
+                        where: { id: athlete.athleteId },
+                        data: {
+                            beltId: athlete.requestedBeltId
+                        }
+                    })
+                )
+            );
         });
 
         return this.getDtoById({
@@ -235,11 +266,7 @@ export class BeltAttestationService {
         });
     }
 
-    async update(
-        id: number,
-        user: JwtPayload,
-        dto: BeltAttestationRequestDto
-    ) {
+    async update(id: number, user: JwtPayload, dto: BeltAttestationRequestDto) {
         const request = await this.getById(id);
         this.ensureCanModify(request, user);
         await this.validateRequestDto(dto, request.trainerId);
