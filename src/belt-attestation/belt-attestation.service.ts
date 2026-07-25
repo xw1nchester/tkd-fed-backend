@@ -187,7 +187,6 @@ export class BeltAttestationService {
         return {
             id: athlete.id,
             athlete: this.userService.createDto(athlete.athlete),
-            currentBelt: athlete.athlete.belt,
             requestedBelt: athlete.requestedBelt
         };
     }

@@ -1,3 +1,4 @@
+import { BeltResponseDto } from '@belt/dto/belt-response.dto';
 import { FileDto } from '@file/dto/file-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -37,8 +38,11 @@ export class UserResponseDto {
     @ApiProperty({ default: 2500 })
     rating: number;
 
-    @ApiProperty({ type: RoleDto })
-    role: RoleDto;
+    @ApiProperty({ type: RoleDto, isArray: true })
+    roles: RoleDto[];
+
+    @ApiProperty({ type: BeltResponseDto, nullable: true })
+    belt: BeltResponseDto;
 }
 
 export class TeamShortResponseDto {

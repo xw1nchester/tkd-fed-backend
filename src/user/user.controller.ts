@@ -148,7 +148,8 @@ export class UserController {
         return await this.userService.findAll({
             query,
             invitedById: user.id,
-            includeTeams: true
+            includeTeams: true,
+            includeBelt: true
         });
     }
 

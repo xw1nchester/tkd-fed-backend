@@ -112,7 +112,12 @@ export class UserService {
     }
 
     createDto(
-        user: User & { avatar?: File; roles: Role[]; teams?: Partial<Team>[] }
+        user: User & {
+            avatar?: File;
+            roles: Role[];
+            teams?: Partial<Team>[];
+            belt?: Belt;
+        }
     ) {
         return {
             id: user.id,
@@ -126,7 +131,8 @@ export class UserService {
             isVerified: user.isVerified,
             rating: user.rating,
             roles: user.roles,
-            teams: user.teams
+            teams: user.teams,
+            belt: user.belt
         };
     }
 
@@ -238,12 +244,14 @@ export class UserService {
         query,
         excludeAdmins = true,
         invitedById,
-        includeTeams = false
+        includeTeams = false,
+        includeBelt = false
     }: {
         query: Partial<AdminUserQueryDto>;
         excludeAdmins?: boolean;
         invitedById?: number;
         includeTeams?: boolean;
+        includeBelt?: boolean;
     }) {
         let {
             page,
@@ -331,6 +339,9 @@ export class UserService {
                 roles: true,
                 ...(includeTeams && {
                     teams: { select: { id: true, name: true } }
+                }),
+                ...(includeBelt && {
+                    belt: true
                 })
             },
             orderBy: {
