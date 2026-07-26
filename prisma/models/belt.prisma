@@ -12,6 +12,7 @@ model Belt {
     rankNumber              Int                      @map("rank_number")
     sortOrder               Int                      @map("sort_order")
     users                   User[]
+    currentInAttestations   BeltAttestationAthlete[] @relation("CurrentBelt")
     requestedInAttestations BeltAttestationAthlete[] @relation("RequestedBelt")
 
     @@map("belts")

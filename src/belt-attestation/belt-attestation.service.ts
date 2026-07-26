@@ -11,6 +11,7 @@ import {
     Belt,
     BeltAttestationAthlete,
     BeltAttestationRequest,
+    File,
     Prisma,
     Role,
     User
@@ -92,7 +93,7 @@ export class BeltAttestationService {
         const request =
             await this.prismaService.beltAttestationRequest.findFirst({
                 where: { id, ...this.getAccessWhere(requesterUser) },
-                include: { trainer: { include: { roles: true } } }
+                include: { trainer: { include: { avatar: true, roles: true } } }
             });
 
         if (!request) {
@@ -102,7 +103,7 @@ export class BeltAttestationService {
         return { beltAttestationRequest: this.createDto(request) };
     }
 
-    private async validateRequestDto(
+    private async prepareRequestData(
         dto: BeltAttestationRequestDto,
         trainerId: number
     ) {
@@ -112,6 +113,8 @@ export class BeltAttestationService {
                 trainerId,
                 dto.athletes.map(athlete => athlete.athleteId)
             );
+
+        const athleteBeltMap = new Map<number, number | null>();
 
         for (const { athleteId, requestedBeltId } of dto.athletes) {
             const belt = belts.find(item => item.id === requestedBeltId);
@@ -127,11 +130,15 @@ export class BeltAttestationService {
                     'Новый пояс должен быть выше текущего'
                 );
             }
+
+            athleteBeltMap.set(athlete.id, athlete.beltId);
         }
+
+        return athleteBeltMap;
     }
 
     async createRequest(dto: BeltAttestationRequestDto, trainerId: number) {
-        await this.validateRequestDto(dto, trainerId);
+        const athleteBeltMap = await this.prepareRequestData(dto, trainerId);
 
         const request = await this.prismaService.beltAttestationRequest.create({
             data: {
@@ -141,6 +148,7 @@ export class BeltAttestationService {
                     create: dto.athletes.map(
                         ({ athleteId, requestedBeltId }) => ({
                             athleteId,
+                            currentBeltId: athleteBeltMap.get(athleteId),
                             requestedBeltId
                         })
                     )
@@ -162,7 +170,9 @@ export class BeltAttestationService {
         const [requests, total] = await this.prismaService.$transaction([
             this.prismaService.beltAttestationRequest.findMany({
                 where,
-                include: { trainer: { include: { roles: true } } },
+                include: {
+                    trainer: { include: { avatar: true, roles: true } }
+                },
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit
@@ -180,13 +190,15 @@ export class BeltAttestationService {
 
     private createAthleteDto(
         athlete: BeltAttestationAthlete & {
-            athlete: User & { roles: Role[]; belt: Belt };
+            athlete: User & { roles: Role[]; avatar: File };
+            currentBelt: Belt;
             requestedBelt: Belt;
         }
     ) {
         return {
             id: athlete.id,
             athlete: this.userService.createDto(athlete.athlete),
+            currentBelt: athlete.currentBelt,
             requestedBelt: athlete.requestedBelt
         };
     }
@@ -206,7 +218,8 @@ export class BeltAttestationService {
             this.prismaService.beltAttestationAthlete.findMany({
                 where,
                 include: {
-                    athlete: { include: { roles: true, belt: true } },
+                    athlete: { include: { roles: true, avatar: true } },
+                    currentBelt: true,
                     requestedBelt: true
                 },
                 orderBy: { id: 'asc' },
@@ -268,7 +281,15 @@ export class BeltAttestationService {
     async update(id: number, user: JwtPayload, dto: BeltAttestationRequestDto) {
         const request = await this.getById(id);
         this.ensureCanModify(request, user);
-        await this.validateRequestDto(dto, request.trainerId);
+
+        if (request.isAccepted) {
+            throw new BadRequestException('Заявка уже принята');
+        }
+
+        const athleteBeltMap = await this.prepareRequestData(
+            dto,
+            request.trainerId
+        );
 
         await this.prismaService.beltAttestationRequest.update({
             where: { id },
@@ -279,6 +300,7 @@ export class BeltAttestationService {
                     create: dto.athletes.map(
                         ({ athleteId, requestedBeltId }) => ({
                             athleteId,
+                            currentBeltId: athleteBeltMap.get(athleteId),
                             requestedBeltId
                         })
                     )

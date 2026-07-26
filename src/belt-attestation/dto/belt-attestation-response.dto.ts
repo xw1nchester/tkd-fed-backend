@@ -35,5 +35,8 @@ export class BeltAttestationAthleteResponseDto {
     athlete: UserResponseDto;
 
     @ApiProperty({ type: BeltResponseDto })
+    currentBelt: BeltResponseDto;
+
+    @ApiProperty({ type: BeltResponseDto })
     requestedBelt: BeltResponseDto;
 }
