@@ -1,5 +1,11 @@
-import { Expose, Transform } from 'class-transformer';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import {
+    IsEnum,
+    IsInt,
+    IsOptional,
+    IsPositive,
+    IsString
+} from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -43,4 +49,20 @@ export class UserQueryDto extends PaginationQueryDto {
     @IsEnum(OrderOption)
     @IsOptional()
     order?: OrderOption;
+
+    @ApiProperty({ name: 'min_age', example: 16, required: false })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @IsPositive()
+    @Expose({ name: 'min_age' })
+    minAge?: number;
+
+    @ApiProperty({ name: 'max_age', example: 20, required: false })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @IsPositive()
+    @Expose({ name: 'max_age' })
+    maxAge?: number;
 }

@@ -242,6 +242,33 @@ export class UserService {
         return dto;
     }
 
+    private getBirthDateFilter(minAge?: number, maxAge?: number) {
+        if (minAge == undefined && maxAge == undefined) return {};
+
+        const today = new Date();
+
+        const birthDateFilter: Prisma.DateTimeFilter = {};
+
+        // минимум возраста -> пользователь должен быть не младше
+        if (minAge !== undefined) {
+            const date = new Date(today);
+            date.setFullYear(today.getFullYear() - minAge);
+
+            birthDateFilter.lte = date;
+        }
+
+        // максимум возраста -> пользователь должен быть не старше
+        if (maxAge !== undefined) {
+            const date = new Date(today);
+            date.setFullYear(today.getFullYear() - maxAge - 1);
+            date.setDate(date.getDate() + 1);
+
+            birthDateFilter.gte = date;
+        }
+
+        return birthDateFilter;
+    }
+
     async findAll({
         query,
         excludeAdmins = true,
@@ -264,7 +291,9 @@ export class UserService {
             teamId,
             roleId,
             excludedTeamId,
-            isTrainer
+            isTrainer,
+            minAge,
+            maxAge
         } = query;
         const skip = (page - 1) * limit;
 
@@ -328,7 +357,8 @@ export class UserService {
                         name: RoleEnum.TRAINER
                     }
                 }
-            })
+            }),
+            birthDate: this.getBirthDateFilter(minAge, maxAge)
         };
 
         sortBy = sortBy ?? SortOption.CREATED_AT;
