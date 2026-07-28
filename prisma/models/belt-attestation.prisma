@@ -2,6 +2,7 @@ model BeltAttestationRequest {
     id              Int                      @id @default(autoincrement())
     trainerId       Int                      @map("trainer_id")
     trainer         User                     @relation("TrainerAttestationRequests", fields: [trainerId], references: [id])
+    // нужно ли это поле?
     chairmanId      Int?                     @map("chairman_id")
     chairman        User?                    @relation("ChairmanAttestationRequests", fields: [chairmanId], references: [id])
     attestationDate DateTime                 @map("attestation_date")

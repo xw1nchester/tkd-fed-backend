@@ -1,4 +1,10 @@
-import { Prisma, Tournament } from '@prisma-client';
+import {
+    Prisma,
+    Role,
+    Tournament,
+    TournamentRequest,
+    User
+} from '@prisma-client';
 
 import {
     BadRequestException,
@@ -14,10 +20,17 @@ import { RoleEnum } from '@shared/enums/role.enum';
 import { TournamentQueryDto } from './dto/tournament-query.dto';
 import { TournamentRequestDto } from './dto/tournament-request.dto';
 import { TournamentStatus } from './enums/tournament-status.enum';
+import { TournamentApplicationRequestDto } from './dto/tournament-application-request.dto';
+import { UserService } from '@user/services/user.service';
+import { WeightCategoryService } from '@weight-category/weight-category.service';
 
 @Injectable()
 export class TournamentService {
-    constructor(private readonly prismaService: PrismaService) {}
+    constructor(
+        private readonly prismaService: PrismaService,
+        private readonly userService: UserService,
+        private readonly weightCategoryService: WeightCategoryService
+    ) {}
 
     private getTournamentStatus(
         startDate: Date,
@@ -215,5 +228,80 @@ export class TournamentService {
 
         await this.prismaService.tournament.delete({ where: { id } });
         return { tournament: this.createDto(existingTournament) };
+    }
+
+    async getRequestById(requestId: number) {
+        const tournamentRequest =
+            await this.prismaService.tournamentRequest.findFirst({
+                include: {
+                    trainer: { include: { avatar: true, roles: true } }
+                },
+                where: { id: requestId }
+            });
+
+        if (!tournamentRequest) {
+            throw new NotFoundException('Заявка на турнир не найдена');
+        }
+
+        return tournamentRequest;
+    }
+
+    createRequestDto(
+        request: TournamentRequest & { trainer: User & { roles: Role[] } }
+    ) {
+        return {
+            id: request.id,
+            organization: request.organization,
+            isAccepted: request.isAccepted,
+            trainer: this.userService.createDto(request.trainer),
+            createdAt: request.createdAt,
+            updatedAt: request.updatedAt
+        };
+    }
+
+    async getRequestDtoById(requestId: number) {
+        const tournamentRequest = await this.getRequestById(requestId);
+        return { tournamentRequest: this.createRequestDto(tournamentRequest) };
+    }
+
+    async createRequest(
+        tournamentId: number,
+        dto: TournamentApplicationRequestDto,
+        trainerId: number
+    ) {
+        const existingTournament = await this.getById(tournamentId);
+
+        await this.userService.validateAndGetInvitedUserIds(
+            trainerId,
+            dto.athletes.map(a => a.athleteId)
+        );
+
+        await this.weightCategoryService.validateWeightCategoryIds([
+            ...new Set(dto.athletes.map(a => a.weightCategoryId))
+        ]);
+
+        // TODO: проверять что уже есть заявка с такими пользователями
+        // TODO: проверить ограничение участников
+        // - возможно стоит добавить поле tournament_id в tournament_request_athletes)
+        // - или participants_count в tournaments
+
+        const createdRequest =
+            await this.prismaService.tournamentRequest.create({
+                data: {
+                    tournamentId: existingTournament.id,
+                    organization: dto.organization,
+                    trainerId,
+                    athletes: {
+                        create: dto.athletes.map(
+                            ({ athleteId, weightCategoryId }) => ({
+                                athleteId,
+                                weightCategoryId
+                            })
+                        )
+                    }
+                }
+            });
+
+        return this.getRequestDtoById(createdRequest.id);
     }
 }

@@ -31,6 +31,7 @@ import {
     TournamentWrapperResponseDto
 } from './dto/tournament-response.dto';
 import { TournamentService } from './tournament.service';
+import { TournamentApplicationRequestDto } from './dto/tournament-application-request.dto';
 
 @Controller('tournament')
 export class TournamentController {
@@ -116,5 +117,21 @@ export class TournamentController {
         @CurrentUser() user: JwtPayload
     ) {
         return this.tournamentService.remove(id, user);
+    }
+
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER)
+    @Post(':id/request')
+    @ApiBearerAuth()
+    async createRequest(
+        @Param('id', ParseIntPipe) tournamentId: number,
+        @Body() dto: TournamentApplicationRequestDto,
+        @CurrentUser() user: JwtPayload
+    ) {
+        return await this.tournamentService.createRequest(
+            tournamentId,
+            dto,
+            user.id
+        );
     }
 }

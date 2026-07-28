@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { Role } from '@auth/decorators';
 import { RoleGuard } from '@auth/guards/role.guard';
@@ -15,6 +15,7 @@ export class RoleController {
     constructor(private readonly roleService: RoleService) {}
 
     @Get()
+    @ApiBearerAuth()
     @ApiOkResponse({ type: RolesResponseDto })
     findAll() {
         return this.roleService.findAll();

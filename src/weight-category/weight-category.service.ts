@@ -52,4 +52,15 @@ export class WeightCategoryService {
         });
         return { weightCategory };
     }
+
+    async validateWeightCategoryIds(ids: number[]) {
+        const weightCategories =
+            await this.prismaService.weightCategory.findMany({
+                where: { id: { in: ids } }
+            });
+
+        if (ids.length != weightCategories.length) {
+            throw new NotFoundException('Весовая категория не найдена');
+        }
+    }
 }
