@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserService } from './user.service';
-import { PrismaService } from '@prisma/prisma.service';
-import { RatingRequestDto } from '@admin/user/dto/rating-request.dto';
-import { PaginationDto } from '@shared/dto/pagination.dto';
 import { Prisma } from '@prisma-client';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+
 import { RatingQueryDto } from '@admin/user/dto/rating-query.dto';
+import { RatingRequestDto } from '@admin/user/dto/rating-request.dto';
+import { PrismaService } from '@prisma/prisma.service';
+import { PaginationDto } from '@shared/dto/pagination.dto';
+
+import { UserService } from './user.service';
 
 @Injectable()
 export class RatingService {

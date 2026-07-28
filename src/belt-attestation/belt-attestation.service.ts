@@ -1,13 +1,4 @@
 import {
-    BadRequestException,
-    Injectable,
-    NotFoundException
-} from '@nestjs/common';
-import { PrismaService } from '@prisma/prisma.service';
-import { UserService } from '@user/services/user.service';
-import { BeltAttestationRequestDto } from './dto/belt-attestation-request.dto';
-import { BeltService } from '@belt/belt.service';
-import {
     Belt,
     BeltAttestationAthlete,
     BeltAttestationRequest,
@@ -16,10 +7,22 @@ import {
     Role,
     User
 } from '@prisma-client';
+
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
+
+import { JwtPayload } from '@auth/interfaces';
+import { BeltService } from '@belt/belt.service';
+import { PrismaService } from '@prisma/prisma.service';
 import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
-import { JwtPayload } from '@auth/interfaces';
 import { RoleEnum } from '@shared/enums/role.enum';
+import { UserService } from '@user/services/user.service';
+
+import { BeltAttestationRequestDto } from './dto/belt-attestation-request.dto';
 
 @Injectable()
 export class BeltAttestationService {

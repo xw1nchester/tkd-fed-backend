@@ -10,17 +10,19 @@ import {
     Post,
     UseGuards
 } from '@nestjs/common';
-import { InviteTokenService } from './invite-token.service';
-import { RoleGuard } from '@auth/guards/role.guard';
-import { CurrentUser, Public, Role } from '@auth/decorators';
-import { RoleEnum } from '@shared/enums/role.enum';
-import { InviteTokenRequestDto } from './dto/token-request.dto';
-import { JwtPayload } from '@auth/interfaces';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+
+import { CurrentUser, Public, Role } from '@auth/decorators';
+import { RoleGuard } from '@auth/guards/role.guard';
+import { JwtPayload } from '@auth/interfaces';
+import { RoleEnum } from '@shared/enums/role.enum';
+
+import { InviteTokenRequestDto } from './dto/token-request.dto';
 import {
     InviteTokensWrapperResponseDto,
     InviteTokenWrapperResponseDto
 } from './dto/token-response.dto';
+import { InviteTokenService } from './invite-token.service';
 
 @Controller('invite-token')
 export class InviteTokenController {

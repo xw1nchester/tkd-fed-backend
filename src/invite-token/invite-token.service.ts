@@ -1,11 +1,14 @@
+import { InviteToken, User } from '@prisma-client';
+
 import {
     BadRequestException,
     Injectable,
     NotFoundException
 } from '@nestjs/common';
+
 import { PrismaService } from '@prisma/prisma.service';
+
 import { InviteTokenRequestDto } from './dto/token-request.dto';
-import { InviteToken, User } from '@prisma-client';
 
 @Injectable()
 export class InviteTokenService {

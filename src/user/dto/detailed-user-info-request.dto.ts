@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { DocumentType } from '@prisma-client';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -8,6 +7,8 @@ import {
     IsOptional,
     ValidateNested
 } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 class DocumentRequestDto {
     @ApiProperty({

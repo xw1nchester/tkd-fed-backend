@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import { Expose, Transform } from 'class-transformer';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 
 export enum SortOption {
     CREATED_AT = 'createdAt',

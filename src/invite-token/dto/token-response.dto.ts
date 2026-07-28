@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { UserBasicResponseDto } from '@user/dto/user-response.dto';
 
 class InviteTokenResponseDto {

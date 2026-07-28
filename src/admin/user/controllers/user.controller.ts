@@ -1,5 +1,3 @@
-import { CurrentUser, Role } from '@auth/decorators';
-import { RoleGuard } from '@auth/guards/role.guard';
 import {
     Body,
     Controller,
@@ -18,20 +16,24 @@ import {
     ApiTags,
     getSchemaPath
 } from '@nestjs/swagger';
+
+import { CurrentUser, Role } from '@auth/decorators';
+import { RoleGuard } from '@auth/guards/role.guard';
+import { JwtPayload } from '@auth/interfaces';
 import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
+import { AvatarRequestDto } from '@user/dto/avatar-request.dto';
+import { UserDetailedWrapperResponseDto } from '@user/dto/user-detailed-response.dto';
 import {
     UserResponseDto,
     UserWrapperResponseDto
 } from '@user/dto/user-response.dto';
-import { UserService } from '@user/services/user.service';
-import { UserEditRequestDto } from '../dto/user-edit-request.dto';
-import { AvatarRequestDto } from '@user/dto/avatar-request.dto';
-import { JwtPayload } from '@auth/interfaces';
-import { AdminUserQueryDto } from '../dto/admin-user-query.dto';
-import { AdminDetailedUserInfoRequestDto } from '../dto/admin-detailed-user-info-request.dto';
-import { UserDetailedWrapperResponseDto } from '@user/dto/user-detailed-response.dto';
 import { RatingService } from '@user/services/rating.service';
+import { UserService } from '@user/services/user.service';
+
+import { AdminDetailedUserInfoRequestDto } from '../dto/admin-detailed-user-info-request.dto';
+import { AdminUserQueryDto } from '../dto/admin-user-query.dto';
+import { UserEditRequestDto } from '../dto/user-edit-request.dto';
 
 @ApiTags('Admin')
 @UseGuards(RoleGuard)

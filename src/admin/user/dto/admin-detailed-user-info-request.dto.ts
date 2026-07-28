@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { VerificationStatus } from '@prisma-client';
-import { DetailedUserInfoRequestDto } from '@user/dto/detailed-user-info-request.dto';
 import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { DetailedUserInfoRequestDto } from '@user/dto/detailed-user-info-request.dto';
 
 export class AdminDetailedUserInfoRequestDto extends DetailedUserInfoRequestDto {
     @ApiProperty({

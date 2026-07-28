@@ -1,7 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
-import { BeltService } from './belt.service';
-import { Public } from '@auth/decorators';
 import { ApiOkResponse } from '@nestjs/swagger';
+
+import { Public } from '@auth/decorators';
+
+import { BeltService } from './belt.service';
 import { BeltsResponseDto } from './dto/belt-response.dto';
 
 @Controller('belt')

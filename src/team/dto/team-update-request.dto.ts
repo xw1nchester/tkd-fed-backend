@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TeamUpdateRequestDto {
     @ApiProperty({ example: 'Старшая группа' })

@@ -10,25 +10,27 @@ import {
     Query,
     UseGuards
 } from '@nestjs/common';
-import { TournamentService } from './tournament.service';
-import { CurrentUser, Public, Role } from '@auth/decorators';
-import { JwtPayload } from '@auth/interfaces';
-import { TournamentRequestDto } from './dto/tournament-request.dto';
 import {
     ApiBearerAuth,
     ApiExtraModels,
     ApiOkResponse,
     getSchemaPath
 } from '@nestjs/swagger';
+
+import { CurrentUser, Public, Role } from '@auth/decorators';
+import { OptionalJwtAuthGuard } from '@auth/guards/optional-jwt-auth.guard';
+import { RoleGuard } from '@auth/guards/role.guard';
+import { JwtPayload } from '@auth/interfaces';
+import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
+import { RoleEnum } from '@shared/enums/role.enum';
+
+import { TournamentQueryDto } from './dto/tournament-query.dto';
+import { TournamentRequestDto } from './dto/tournament-request.dto';
 import {
     TournamentResponseDto,
     TournamentWrapperResponseDto
 } from './dto/tournament-response.dto';
-import { RoleGuard } from '@auth/guards/role.guard';
-import { RoleEnum } from '@shared/enums/role.enum';
-import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
-import { OptionalJwtAuthGuard } from '@auth/guards/optional-jwt-auth.guard';
-import { TournamentQueryDto } from './dto/tournament-query.dto';
+import { TournamentService } from './tournament.service';
 
 @Controller('tournament')
 export class TournamentController {

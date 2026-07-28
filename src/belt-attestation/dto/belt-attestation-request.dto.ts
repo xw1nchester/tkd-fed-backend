@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
     ArrayMinSize,
@@ -7,6 +6,8 @@ import {
     IsNumber,
     ValidateNested
 } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 class AthleteRequestDto {
     @ApiProperty({ example: 1 })

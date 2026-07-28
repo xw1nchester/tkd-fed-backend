@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import { Expose, Transform } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 
 export class TournamentQueryDto extends PaginationQueryDto {
     @ApiProperty({

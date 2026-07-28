@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
 import { CodeModule } from '@code/code.module';
+import { InviteTokenModule } from '@invite-token/invite-token.module';
 import { MailModule } from '@mail/mail.module';
 import { UserModule } from '@user/user.module';
 
@@ -11,7 +12,6 @@ import { AuthService } from './auth.service';
 import { options } from './config';
 import { GUARDS } from './guards';
 import { STRATEGIES } from './strategies';
-import { InviteTokenModule } from '@invite-token/invite-token.module';
 
 @Module({
     imports: [

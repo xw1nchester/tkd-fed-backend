@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { InviteTokenService } from './invite-token.service';
+
 import { InviteTokenController } from './invite-token.controller';
+import { InviteTokenService } from './invite-token.service';
 
 @Module({
     controllers: [InviteTokenController],

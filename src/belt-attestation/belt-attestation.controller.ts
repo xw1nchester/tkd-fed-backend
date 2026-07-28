@@ -10,20 +10,22 @@ import {
     Query,
     UseGuards
 } from '@nestjs/common';
+import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
+
+import { CurrentUser, Role } from '@auth/decorators';
+import { RoleGuard } from '@auth/guards/role.guard';
+import { JwtPayload } from '@auth/interfaces';
+import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
+import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
+import { RoleEnum } from '@shared/enums/role.enum';
+
 import { BeltAttestationService } from './belt-attestation.service';
 import { BeltAttestationRequestDto } from './dto/belt-attestation-request.dto';
-import { CurrentUser, Role } from '@auth/decorators';
-import { JwtPayload } from '@auth/interfaces';
-import { RoleGuard } from '@auth/guards/role.guard';
-import { RoleEnum } from '@shared/enums/role.enum';
-import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
-import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 import {
     BeltAttestationAthleteResponseDto,
     BeltAttestationResponseDto,
     BeltAttestationWrapperResponseDto
 } from './dto/belt-attestation-response.dto';
-import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 
 @Controller('belt-attestation')
 export class BeltAttestationController {

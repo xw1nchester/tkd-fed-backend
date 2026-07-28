@@ -1,26 +1,31 @@
+import { join } from 'path';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+
+import { AdminModule } from './admin/admin.module';
+import { AgeCategoryModule } from './age-category/age-category.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
+import { BeltModule } from './belt/belt.module';
+import { BeltAttestationModule } from './belt-attestation/belt-attestation.module';
 import { CodeModule } from './code/code.module';
+import { FileModule } from './file/file.module';
+import { InviteTokenModule } from './invite-token/invite-token.module';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { AdminModule } from './admin/admin.module';
+
 import { RoleService } from './role/role.service';
 import { RoleModule } from './role/role.module';
-import { InviteTokenModule } from './invite-token/invite-token.module';
 import { TeamModule } from './team/team.module';
-import { BeltModule } from './belt/belt.module';
 import { SportRankModule } from './sport-rank/sport-rank.module';
-import { FileModule } from './file/file.module';
 import { TournamentModule } from './tournament/tournament.module';
-import { BeltAttestationModule } from './belt-attestation/belt-attestation.module';
+import { WeightCategoryModule } from './weight-category/weight-category.module';
 
 @Module({
     imports: [
@@ -42,7 +47,9 @@ import { BeltAttestationModule } from './belt-attestation/belt-attestation.modul
         SportRankModule,
         FileModule,
         TournamentModule,
-        BeltAttestationModule
+        BeltAttestationModule,
+        AgeCategoryModule,
+        WeightCategoryModule
     ],
     controllers: [AppController],
     providers: [

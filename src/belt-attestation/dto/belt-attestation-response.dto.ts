@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { BeltResponseDto } from '@belt/dto/belt-response.dto';
 import { UserResponseDto } from '@user/dto/user-response.dto';
 

@@ -9,30 +9,31 @@ import {
     Query,
     UseGuards
 } from '@nestjs/common';
-
-import { UserService } from './services/user.service';
-import { CurrentUser, Public, Role } from '@auth/decorators';
-import { JwtPayload } from '@auth/interfaces';
 import {
     ApiBearerAuth,
     ApiExtraModels,
     ApiOkResponse,
     getSchemaPath
 } from '@nestjs/swagger';
+
+import { CurrentUser, Public, Role } from '@auth/decorators';
+import { RoleGuard } from '@auth/guards/role.guard';
+import { JwtPayload } from '@auth/interfaces';
+import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
+import { RoleEnum } from '@shared/enums/role.enum';
+
+import { AvatarRequestDto } from './dto/avatar-request.dto';
+import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
+import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
+import { InvitedUserQueryDto } from './dto/invited-user-query.dto';
+import { UserDetailedWrapperResponseDto } from './dto/user-detailed-response.dto';
+import { UserQueryDto } from './dto/user-query.dto';
 import {
     InvitedUserResponseDto,
     UserResponseDto,
     UserWrapperResponseDto
 } from './dto/user-response.dto';
-import { AvatarRequestDto } from './dto/avatar-request.dto';
-import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
-import { UserQueryDto } from './dto/user-query.dto';
-import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
-import { RoleGuard } from '@auth/guards/role.guard';
-import { RoleEnum } from '@shared/enums/role.enum';
-import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
-import { UserDetailedWrapperResponseDto } from './dto/user-detailed-response.dto';
-import { InvitedUserQueryDto } from './dto/invited-user-query.dto';
+import { UserService } from './services/user.service';
 
 @Controller('user')
 export class UserController {

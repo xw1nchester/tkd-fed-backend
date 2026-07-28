@@ -1,7 +1,9 @@
+import { VerificationStatus } from '@prisma-client';
+
+import { ApiProperty } from '@nestjs/swagger';
+
 import { BeltResponseDto } from '@belt/dto/belt-response.dto';
 import { FileDto } from '@file/dto/file-response.dto';
-import { ApiProperty } from '@nestjs/swagger';
-import { VerificationStatus } from '@prisma-client';
 import { SportRankResponseDto } from '@sport-rank/dto/sport-rank-response.dto';
 
 class DocumentDto {

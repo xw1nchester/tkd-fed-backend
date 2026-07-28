@@ -1,13 +1,3 @@
-import { genSaltSync, hashSync } from 'bcrypt';
-
-import {
-    BadRequestException,
-    ForbiddenException,
-    Injectable,
-    NotFoundException
-} from '@nestjs/common';
-
-import { PrismaService } from '@prisma/prisma.service';
 import {
     Belt,
     Document,
@@ -20,19 +10,31 @@ import {
     User,
     VerificationStatus
 } from '@prisma-client';
+import { genSaltSync, hashSync } from 'bcrypt';
+
+import {
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BasicUserEditRequestDto } from '../dto/basic-user-edit-request.dto';
-import { PaginationDto } from '@shared/dto/pagination.dto';
-import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
-import { RoleEnum } from '@shared/enums/role.enum';
-import { RegisterRequestDto } from '@auth/dto/register-request.dto';
-import { AdminUserQueryDto } from '@admin/user/dto/admin-user-query.dto';
-import { DetailedUserInfoRequestDto } from '../dto/detailed-user-info-request.dto';
-import { FileService } from '@file/file.service';
-import { BeltService } from '@belt/belt.service';
-import { SportRankService } from '@sport-rank/sport-rank.service';
+
 import { AdminDetailedUserInfoRequestDto } from '@admin/user/dto/admin-detailed-user-info-request.dto';
+import { AdminUserQueryDto } from '@admin/user/dto/admin-user-query.dto';
+import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
+import { RegisterRequestDto } from '@auth/dto/register-request.dto';
+import { BeltService } from '@belt/belt.service';
+import { FileService } from '@file/file.service';
+import { PrismaService } from '@prisma/prisma.service';
+import { PaginationDto } from '@shared/dto/pagination.dto';
+import { RoleEnum } from '@shared/enums/role.enum';
+import { SportRankService } from '@sport-rank/sport-rank.service';
+
 import { OrderOption, SortOption } from '@user/dto/user-query.dto';
+import { BasicUserEditRequestDto } from '../dto/basic-user-edit-request.dto';
+
+import { DetailedUserInfoRequestDto } from '../dto/detailed-user-info-request.dto';
 
 @Injectable()
 export class UserService {

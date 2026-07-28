@@ -1,16 +1,19 @@
+import { Prisma, Tournament } from '@prisma-client';
+
 import {
     BadRequestException,
     Injectable,
     NotFoundException
 } from '@nestjs/common';
-import { PrismaService } from '@prisma/prisma.service';
-import { Prisma, Tournament } from '@prisma-client';
-import { TournamentRequestDto } from './dto/tournament-request.dto';
-import { PaginationDto } from '@shared/dto/pagination.dto';
-import { TournamentQueryDto } from './dto/tournament-query.dto';
-import { TournamentStatus } from './enums/tournament-status.enum';
+
 import { JwtPayload } from '@auth/interfaces';
+import { PrismaService } from '@prisma/prisma.service';
+import { PaginationDto } from '@shared/dto/pagination.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
+
+import { TournamentQueryDto } from './dto/tournament-query.dto';
+import { TournamentRequestDto } from './dto/tournament-request.dto';
+import { TournamentStatus } from './enums/tournament-status.enum';
 
 @Injectable()
 export class TournamentService {

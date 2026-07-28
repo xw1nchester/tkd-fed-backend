@@ -1,5 +1,7 @@
-import { compareSync } from 'bcrypt';
 import { randomUUID } from 'crypto';
+
+import { Role, User } from '@prisma-client';
+import { compareSync } from 'bcrypt';
 
 import {
     Injectable,
@@ -11,17 +13,16 @@ import {
 import { JwtService } from '@nestjs/jwt';
 
 import { CodeService } from '@code/code.service';
+import { InviteTokenService } from '@invite-token/invite-token.service';
 import { MailService } from '@mail/mail.service';
-import { Role, User } from '@prisma-client';
 import { PrismaService } from '@prisma/prisma.service';
 import { UserService } from '@user/services/user.service';
 
-import { LoginRequestDto } from './dto/login-request.dto';
-import { RegisterRequestDto } from './dto/register-request.dto';
-import { InviteTokenService } from '@invite-token/invite-token.service';
-import { VerifyRecoveryDto } from './dto/verify-recovery.dto';
-import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 import { ChangePasswordRequestDto } from './dto/change-password-request.dto';
+import { LoginRequestDto } from './dto/login-request.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+import { RegisterRequestDto } from './dto/register-request.dto';
+import { VerifyRecoveryDto } from './dto/verify-recovery.dto';
 
 @Injectable()
 export class AuthService {

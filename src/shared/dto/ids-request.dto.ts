@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMinSize, IsArray } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class IdsRequestDto {
     @ApiProperty({ example: [1, 2] })

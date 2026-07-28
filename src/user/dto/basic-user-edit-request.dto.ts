@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma-client';
 import {
     IsDateString,
@@ -7,6 +6,8 @@ import {
     IsOptional,
     IsString
 } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class BasicUserEditRequestDto {
     @ApiProperty({ example: 'Дружков' })

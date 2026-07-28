@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { BasicUserEditRequestDto } from '@user/dto/basic-user-edit-request.dto';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEmail, IsNotEmpty } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { BasicUserEditRequestDto } from '@user/dto/basic-user-edit-request.dto';
 
 // TODO: вопрос: где должно храниться это dto, в админском модуле или в модуле пользователей
 export class UserEditRequestDto extends BasicUserEditRequestDto {

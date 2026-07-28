@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma-client';
 import { Transform } from 'class-transformer';
 import {
@@ -10,6 +9,8 @@ import {
     IsString,
     MinLength
 } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterRequestDto {
     @ApiProperty({ example: 'user@example.com' })

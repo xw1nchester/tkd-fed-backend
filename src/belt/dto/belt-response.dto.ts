@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { BeltRankType } from '@prisma-client';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class BeltResponseDto {
     @ApiProperty({ example: 1 })

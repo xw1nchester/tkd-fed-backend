@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TournamentService } from './tournament.service';
-import { TournamentController } from './tournament.controller';
+
 import { PrismaModule } from '@prisma/prisma.module';
+
+import { TournamentController } from './tournament.controller';
+import { TournamentService } from './tournament.service';
 
 @Module({
     imports: [PrismaModule],

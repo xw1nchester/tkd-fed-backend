@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { BeltAttestationService } from './belt-attestation.service';
-import { BeltAttestationController } from './belt-attestation.controller';
-import { UserModule } from '@user/user.module';
+
 import { BeltModule } from '@belt/belt.module';
+import { UserModule } from '@user/user.module';
+
+import { BeltAttestationController } from './belt-attestation.controller';
+import { BeltAttestationService } from './belt-attestation.service';
 
 @Module({
     imports: [UserModule, BeltModule],

@@ -46,6 +46,14 @@
             "@sport-rank/*": ["src/sport-rank/*"],
             "@file": ["src/file"],
             "@file/*": ["src/file/*"],
+            "@age-category": ["src/age-category"],
+            "@age-category/*": ["src/age-category/*"],
+            "@weight-category": ["src/weight-category"],
+            "@weight-category/*": ["src/weight-category/*"],
+            "@belt-attestation": ["src/belt-attestation"],
+            "@belt-attestation/*": ["src/belt-attestation/*"],
+            "@tournament": ["src/tournament"],
+            "@tournament/*": ["src/tournament/*"]
         }
     }
 }

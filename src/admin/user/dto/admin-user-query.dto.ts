@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { InvitedUserQueryDto } from '@user/dto/invited-user-query.dto';
 import { Expose, Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { InvitedUserQueryDto } from '@user/dto/invited-user-query.dto';
 
 export class AdminUserQueryDto extends InvitedUserQueryDto {
     @ApiProperty({

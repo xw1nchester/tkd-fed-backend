@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@prisma/prisma.service';
-import { CreateFileDto } from './dto/create-file.dto';
 import { File } from '@prisma-client';
+
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
+import { PrismaService } from '@prisma/prisma.service';
+
+import { CreateFileDto } from './dto/create-file.dto';
 
 @Injectable()
 export class FileService {

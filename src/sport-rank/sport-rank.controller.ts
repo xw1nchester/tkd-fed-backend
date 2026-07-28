@@ -1,8 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
-import { SportRankService } from './sport-rank.service';
-import { Public } from '@auth/decorators';
 import { ApiOkResponse } from '@nestjs/swagger';
+
+import { Public } from '@auth/decorators';
+
 import { SportRanksResponseDto } from './dto/sport-rank-response.dto';
+import { SportRankService } from './sport-rank.service';
 
 @Controller('sport-rank')
 export class SportRankController {

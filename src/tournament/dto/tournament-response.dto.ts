@@ -1,6 +1,8 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TournamentStatus } from '../enums/tournament-status.enum';
 import { IsEnum } from 'class-validator';
+
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+import { TournamentStatus } from '../enums/tournament-status.enum';
 
 export class TournamentResponseDto {
     @ApiProperty({ example: 1 })

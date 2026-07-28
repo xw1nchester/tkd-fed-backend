@@ -1,6 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
+
 import { BeltResponseDto } from '@belt/dto/belt-response.dto';
 import { FileDto } from '@file/dto/file-response.dto';
-import { ApiProperty } from '@nestjs/swagger';
 
 class RoleDto {
     @ApiProperty({ example: 1 })

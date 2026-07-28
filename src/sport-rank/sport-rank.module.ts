@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { SportRankService } from './sport-rank.service';
+
 import { SportRankController } from './sport-rank.controller';
+import { SportRankService } from './sport-rank.service';
 
 @Module({
     controllers: [SportRankController],

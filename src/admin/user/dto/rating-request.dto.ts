@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RatingRequestDto {
     @ApiProperty({ example: 1 })

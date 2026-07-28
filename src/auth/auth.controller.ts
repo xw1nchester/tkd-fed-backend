@@ -1,3 +1,4 @@
+import { Token } from '@prisma-client';
 import { Response } from 'express';
 
 import {
@@ -11,24 +12,23 @@ import {
     Res
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Token } from '@prisma-client';
-
-import { AuthService } from './auth.service';
-import { Cookie, CurrentUser, Public, UserAgent } from './decorators';
-import { LoginRequestDto } from './dto/login-request.dto';
-import { JwtPayload } from './interfaces';
-import { CodeDto } from './dto/code.dto';
 import {
     ApiBearerAuth,
     ApiCreatedResponse,
     ApiOkResponse
 } from '@nestjs/swagger';
+
+import { AuthService } from './auth.service';
+import { Cookie, CurrentUser, Public, UserAgent } from './decorators';
 import { AuthResponseDto, TokenResponseDto } from './dto/auth-response.dto';
-import { RegisterRequestDto } from './dto/register-request.dto';
-import { RecoveryRequestDto } from './dto/recovery-request.dto';
-import { VerifyRecoveryDto } from './dto/verify-recovery.dto';
-import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 import { ChangePasswordRequestDto } from './dto/change-password-request.dto';
+import { CodeDto } from './dto/code.dto';
+import { LoginRequestDto } from './dto/login-request.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+import { RecoveryRequestDto } from './dto/recovery-request.dto';
+import { RegisterRequestDto } from './dto/register-request.dto';
+import { VerifyRecoveryDto } from './dto/verify-recovery.dto';
+import { JwtPayload } from './interfaces';
 
 const REFRESH_TOKEN = 'refresh-token';
 

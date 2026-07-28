@@ -1,4 +1,8 @@
 import { randomUUID } from 'crypto';
+import { extname } from 'path';
+
+import { diskStorage } from 'multer';
+
 import {
     BadRequestException,
     Controller,
@@ -6,9 +10,7 @@ import {
     UploadedFiles,
     UseInterceptors
 } from '@nestjs/common';
-import { FileService } from './file.service';
-import { extname } from 'path';
-import { diskStorage } from 'multer';
+import { ConfigService } from '@nestjs/config';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
     ApiBearerAuth,
@@ -16,10 +18,12 @@ import {
     ApiConsumes,
     ApiOkResponse
 } from '@nestjs/swagger';
-import { FilesResponseDto } from './dto/file-response.dto';
-import { ConfigService } from '@nestjs/config';
-import { JwtPayload } from '@auth/interfaces';
+
 import { CurrentUser } from '@auth/decorators';
+import { JwtPayload } from '@auth/interfaces';
+
+import { FilesResponseDto } from './dto/file-response.dto';
+import { FileService } from './file.service';
 
 @Controller('file')
 export class FileController {

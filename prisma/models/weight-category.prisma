@@ -1,0 +1,7 @@
+model WeightCategory {
+    id     Int    @id @default(autoincrement())
+    gender Gender @default(MALE)
+    weight Int
+
+    @@map("weight_categories")
+}

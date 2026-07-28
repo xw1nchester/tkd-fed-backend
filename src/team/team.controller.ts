@@ -12,26 +12,29 @@ import {
     Query,
     UseGuards
 } from '@nestjs/common';
-import { TeamService } from './team.service';
-import { TeamCreateRequestDto } from './dto/team-create-request.dto';
-import { CurrentUser, Role } from '@auth/decorators';
-import { JwtPayload } from '@auth/interfaces';
-import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import {
     ApiBearerAuth,
     ApiExtraModels,
     ApiOkResponse,
     getSchemaPath
 } from '@nestjs/swagger';
+
+import { CurrentUser, Role } from '@auth/decorators';
+import { RoleGuard } from '@auth/guards/role.guard';
+import { JwtPayload } from '@auth/interfaces';
+import { IdsRequestDto } from '@shared/dto/ids-request.dto';
+import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
+import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
+import { RoleEnum } from '@shared/enums/role.enum';
+
+import { TeamCreateRequestDto } from './dto/team-create-request.dto';
 import {
     TeamResponseDto,
     TeamWrapperResponseDto
 } from './dto/team-response.dto';
-import { RoleGuard } from '@auth/guards/role.guard';
-import { RoleEnum } from '@shared/enums/role.enum';
-import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
+
 import { TeamUpdateRequestDto } from './dto/team-update-request.dto';
-import { IdsRequestDto } from '@shared/dto/ids-request.dto';
+import { TeamService } from './team.service';
 
 @UseGuards(RoleGuard)
 @Role(RoleEnum.TRAINER)

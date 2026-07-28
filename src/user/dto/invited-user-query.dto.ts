@@ -1,6 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
+
 import { UserQueryDto } from './user-query.dto';
 
 export class InvitedUserQueryDto extends UserQueryDto {
