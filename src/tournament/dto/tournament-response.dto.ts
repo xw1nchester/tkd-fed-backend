@@ -29,6 +29,9 @@ export class TournamentResponseDto {
     @ApiProperty({ example: '2026-08-16T18:00:00.000Z' })
     endDate: Date;
 
+    @ApiPropertyOptional({ example: 150 })
+    acceptedAthletesCount: number;
+
     @ApiPropertyOptional({ example: 300, nullable: true })
     maxParticipants: number | null;
 

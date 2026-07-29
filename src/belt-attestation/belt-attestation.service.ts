@@ -323,6 +323,6 @@ export class BeltAttestationService {
             where: { id }
         });
 
-        return dto;
+        return { beltAttestationRequest: dto };
     }
 }

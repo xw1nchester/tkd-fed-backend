@@ -1,39 +1,40 @@
 model Tournament {
-    id                 Int                 @id @default(autoincrement())
-    name               String
-    logo               String?
-    banner             String?
-    startDate          DateTime            @map("start_date")
-    endDate            DateTime            @map("end_date")
-    maxParticipants    Int?                @map("max_participants")
-    city               String
-    address            String
-    organizer          String?
-    chiefSecretary     String?             @map("chief_secretary")
-    chiefJudge         String?             @map("chief_judge")
-    contacts           String?
-    description        String?
-    isPublished        Boolean             @default(false) @map("is_published")
-    creatorId          Int                 @map("creator_id")
-    creator            User                @relation("TournamentCreator", fields: [creatorId], references: [id])
-    createdAt          DateTime            @default(now()) @map("created_at")
-    updatedAt          DateTime            @updatedAt @map("updated_at")
-    tournamentRequests TournamentRequest[]
+    id                    Int                 @id @default(autoincrement())
+    name                  String
+    logo                  String?
+    banner                String?
+    startDate             DateTime            @map("start_date")
+    endDate               DateTime            @map("end_date")
+    maxParticipants       Int?                @map("max_participants")
+    acceptedAthletesCount Int                 @default(0) @map("accepted_athletes_count")
+    city                  String
+    address               String
+    organizer             String?
+    chiefSecretary        String?             @map("chief_secretary")
+    chiefJudge            String?             @map("chief_judge")
+    contacts              String?
+    description           String?
+    isPublished           Boolean             @default(false) @map("is_published")
+    creatorId             Int                 @map("creator_id")
+    creator               User                @relation("TournamentCreator", fields: [creatorId], references: [id])
+    createdAt             DateTime            @default(now()) @map("created_at")
+    updatedAt             DateTime            @updatedAt @map("updated_at")
+    tournamentRequests    TournamentRequest[]
 
     @@map("tournaments")
 }
 
 model TournamentRequest {
-    id                        Int                        @id @default(autoincrement())
-    tournamentId              Int                        @map("tournament_id")
-    tournament                Tournament                 @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-    trainerId                 Int                        @map("trainer_id")
-    trainer                   User                       @relation("TrainerTournamentRequests", fields: [trainerId], references: [id])
-    organization              String
-    isAccepted                Boolean                    @default(false) @map("is_accepted")
-    createdAt                 DateTime                   @default(now()) @map("created_at")
-    updatedAt                 DateTime                   @updatedAt @map("updated_at")
-    athletes TournamentRequestAthlete[]
+    id           Int                        @id @default(autoincrement())
+    tournamentId Int                        @map("tournament_id")
+    tournament   Tournament                 @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+    trainerId    Int                        @map("trainer_id")
+    trainer      User                       @relation("TrainerTournamentRequests", fields: [trainerId], references: [id])
+    organization String
+    isAccepted   Boolean                    @default(false) @map("is_accepted")
+    createdAt    DateTime                   @default(now()) @map("created_at")
+    updatedAt    DateTime                   @updatedAt @map("updated_at")
+    athletes     TournamentRequestAthlete[]
 
     @@map("tournament_requests")
 }

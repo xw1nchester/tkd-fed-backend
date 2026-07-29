@@ -32,7 +32,6 @@ import {
     TeamResponseDto,
     TeamWrapperResponseDto
 } from './dto/team-response.dto';
-
 import { TeamUpdateRequestDto } from './dto/team-update-request.dto';
 import { TeamService } from './team.service';
 

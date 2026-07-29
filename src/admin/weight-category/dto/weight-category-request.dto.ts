@@ -1,7 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma-client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsNumber, IsPositive } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class WeightCategoryRequestDto {
     @ApiProperty({ enum: Gender, example: Gender.MALE })

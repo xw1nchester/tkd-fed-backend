@@ -4,13 +4,12 @@ import {
     IsArray,
     IsNotEmpty,
     IsNumber,
-    IsString,
     ValidateNested
 } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-class AthleteRequestDto {
+class AthleteRequestUpdateDto {
     @ApiProperty({ example: 1 })
     @Transform(({ value }) => Number(value))
     @IsNumber()
@@ -22,20 +21,18 @@ class AthleteRequestDto {
     weightCategoryId: number;
 }
 
-export class TournamentApplicationRequestDto {
+export class TournamentRequestUpdateDto {
     @ApiProperty({ example: 'ООО Рога и Копыта' })
-    @IsString()
     @IsNotEmpty()
     organization: string;
 
-    @ApiProperty({ type: AthleteRequestDto, isArray: true })
+    @ApiProperty({ type: AthleteRequestUpdateDto, isArray: true })
     @Transform(({ value }) => {
         if (!Array.isArray(value)) return value;
 
         const unique = new Map<number, any>();
 
         for (const athlete of value) {
-            // если встретился повтор, останется первый элемент
             if (!unique.has(Number(athlete.athleteId))) {
                 unique.set(Number(athlete.athleteId), athlete);
             }
@@ -46,6 +43,6 @@ export class TournamentApplicationRequestDto {
     @IsArray()
     @ArrayMinSize(1)
     @ValidateNested({ each: true })
-    @Type(() => AthleteRequestDto)
-    athletes: AthleteRequestDto[];
+    @Type(() => AthleteRequestUpdateDto)
+    athletes: AthleteRequestUpdateDto[];
 }

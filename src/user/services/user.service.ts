@@ -30,10 +30,9 @@ import { PrismaService } from '@prisma/prisma.service';
 import { PaginationDto } from '@shared/dto/pagination.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
 import { SportRankService } from '@sport-rank/sport-rank.service';
-
 import { OrderOption, SortOption } from '@user/dto/user-query.dto';
-import { BasicUserEditRequestDto } from '../dto/basic-user-edit-request.dto';
 
+import { BasicUserEditRequestDto } from '../dto/basic-user-edit-request.dto';
 import { DetailedUserInfoRequestDto } from '../dto/detailed-user-info-request.dto';
 
 @Injectable()

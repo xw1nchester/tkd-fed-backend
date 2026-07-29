@@ -2,7 +2,7 @@ import { Gender } from '@prisma-client';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-class WeightCategoryResponseDto {
+export class WeightCategoryResponseDto {
     @ApiProperty({ example: 1 })
     id: number;
 

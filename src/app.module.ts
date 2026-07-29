@@ -18,13 +18,12 @@ import { FileModule } from './file/file.module';
 import { InviteTokenModule } from './invite-token/invite-token.module';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { UserModule } from './user/user.module';
-
-import { RoleService } from './role/role.service';
 import { RoleModule } from './role/role.module';
-import { TeamModule } from './team/team.module';
+import { RoleService } from './role/role.service';
 import { SportRankModule } from './sport-rank/sport-rank.module';
+import { TeamModule } from './team/team.module';
 import { TournamentModule } from './tournament/tournament.module';
+import { UserModule } from './user/user.module';
 import { WeightCategoryModule } from './weight-category/weight-category.module';
 
 @Module({
