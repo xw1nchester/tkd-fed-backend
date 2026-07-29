@@ -40,4 +40,7 @@ export class TournamentRequestAthleteResponseDto {
 
     @ApiProperty({ type: WeightCategoryResponseDto })
     weightCategory: WeightCategoryResponseDto;
+
+    @ApiProperty({ example: 'Василий Д.' })
+    firstTrainer: string;
 }

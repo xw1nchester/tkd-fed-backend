@@ -47,6 +47,7 @@ model TournamentRequestAthlete {
     athlete          User              @relation(fields: [athleteId], references: [id])
     weightCategoryId Int               @map("weight_category_id")
     weightCategory   WeightCategory    @relation(fields: [weightCategoryId], references: [id])
+    firstTrainer     String            @map("first_trainer")
 
     @@map("tournament_request_athletes")
 }

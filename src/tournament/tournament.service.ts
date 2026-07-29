@@ -24,7 +24,6 @@ import { WeightCategoryService } from '@weight-category/weight-category.service'
 
 import { TournamentApplicationRequestDto } from './dto/tournament-application-request.dto';
 import { TournamentQueryDto } from './dto/tournament-query.dto';
-import { TournamentRequestUpdateDto } from './dto/tournament-request-update-request.dto';
 import { TournamentRequestDto } from './dto/tournament-request.dto';
 import { TournamentStatus } from './enums/tournament-status.enum';
 import { TournamentApplicationQueryDto } from './dto/tournament-application-query.dto';
@@ -322,7 +321,8 @@ export class TournamentService {
         return {
             id: athlete.id,
             athlete: this.userService.createDto(athlete.athlete),
-            weightCategory: athlete.weightCategory
+            weightCategory: athlete.weightCategory,
+            firstTrainer: athlete.firstTrainer,
         };
     }
 
@@ -397,9 +397,10 @@ export class TournamentService {
                     trainerId: trainer.id,
                     athletes: {
                         create: dto.athletes.map(
-                            ({ athleteId, weightCategoryId }) => ({
+                            ({ athleteId, weightCategoryId, firstTrainer }) => ({
                                 athleteId,
-                                weightCategoryId
+                                weightCategoryId,
+                                firstTrainer
                             })
                         )
                     }
@@ -499,7 +500,7 @@ export class TournamentService {
     async updateRequest(
         id: number,
         user: JwtPayload,
-        dto: TournamentRequestUpdateDto
+        dto: TournamentApplicationRequestDto
     ) {
         const request = await this.getRequestById(id);
         this.ensureCanModifyRequest(request, user);
@@ -517,9 +518,10 @@ export class TournamentService {
                 athletes: {
                     deleteMany: {},
                     create: dto.athletes.map(
-                        ({ athleteId, weightCategoryId }) => ({
+                        ({ athleteId, weightCategoryId, firstTrainer }) => ({
                             athleteId,
-                            weightCategoryId
+                            weightCategoryId,
+                            firstTrainer
                         })
                     )
                 }
@@ -533,6 +535,10 @@ export class TournamentService {
         const request = await this.getRequestById(id);
         this.ensureCanModifyRequest(request, user);
         const dto = this.createRequestDto(request);
+
+        if (request.isAccepted) {
+            throw new BadRequestException('Заявка уже принята');
+        }
 
         await this.prismaService.tournamentRequest.delete({
             where: { id }

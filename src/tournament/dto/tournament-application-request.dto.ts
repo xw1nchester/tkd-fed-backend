@@ -20,6 +20,11 @@ class AthleteRequestDto {
     @Transform(({ value }) => Number(value))
     @IsNumber()
     weightCategoryId: number;
+
+    @ApiProperty({ example: "Василий Д." })
+    @IsString()
+    @IsNotEmpty()
+    firstTrainer: string;
 }
 
 export class TournamentApplicationRequestDto {

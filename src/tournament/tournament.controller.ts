@@ -32,7 +32,6 @@ import {
     TournamentRequestWrapperResponseDto,
     TournamentRequestAthleteResponseDto
 } from './dto/tournament-request-response.dto';
-import { TournamentRequestUpdateDto } from './dto/tournament-request-update-request.dto';
 import { TournamentRequestDto } from './dto/tournament-request.dto';
 import {
     TournamentResponseDto,
@@ -224,7 +223,7 @@ export class TournamentController {
     @ApiOkResponse({ type: TournamentRequestWrapperResponseDto })
     async updateRequest(
         @Param('id', ParseIntPipe) id: number,
-        @Body() dto: TournamentRequestUpdateDto,
+        @Body() dto: TournamentApplicationRequestDto,
         @CurrentUser() user: JwtPayload
     ) {
         return this.tournamentService.updateRequest(id, user, dto);

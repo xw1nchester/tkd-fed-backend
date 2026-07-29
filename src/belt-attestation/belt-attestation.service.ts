@@ -317,6 +317,11 @@ export class BeltAttestationService {
     async remove(id: number, user: JwtPayload) {
         const request = await this.getById(id);
         this.ensureCanModify(request, user);
+
+        if (request.isAccepted) {
+            throw new BadRequestException('Заявка уже принята');
+        }
+        
         const dto = { beltAttestationRequest: this.createDto(request) };
 
         await this.prismaService.beltAttestationRequest.delete({
