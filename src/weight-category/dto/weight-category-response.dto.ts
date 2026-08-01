@@ -9,8 +9,11 @@ export class WeightCategoryResponseDto {
     @ApiProperty({ enum: Gender, example: Gender.MALE })
     gender: Gender;
 
-    @ApiProperty({ example: 80 })
-    weight: number;
+    @ApiProperty({ example: 60 })
+    minWeight: number;
+
+    @ApiProperty({ example: 65 })
+    maxWeight: number;
 }
 
 export class WeightCategoryWrapperResponseDto {

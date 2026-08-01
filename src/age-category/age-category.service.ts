@@ -8,7 +8,9 @@ export class AgeCategoryService {
     constructor(private readonly prismaService: PrismaService) {}
 
     async findAll() {
-        const ageCategories = await this.prismaService.ageCategory.findMany();
+        const ageCategories = await this.prismaService.ageCategory.findMany({
+            include: { weightCategories: { omit: { ageCategoryId: true } } }
+        });
         return { ageCategories };
     }
 

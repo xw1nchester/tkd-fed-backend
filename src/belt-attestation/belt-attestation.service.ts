@@ -321,7 +321,7 @@ export class BeltAttestationService {
         if (request.isAccepted) {
             throw new BadRequestException('Заявка уже принята');
         }
-        
+
         const dto = { beltAttestationRequest: this.createDto(request) };
 
         await this.prismaService.beltAttestationRequest.delete({

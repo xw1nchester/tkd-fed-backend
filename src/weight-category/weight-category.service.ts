@@ -9,7 +9,9 @@ export class WeightCategoryService {
 
     async findAll() {
         const weightCategories =
-            await this.prismaService.weightCategory.findMany();
+            await this.prismaService.weightCategory.findMany({
+                omit: { ageCategoryId: true }
+            });
         return { weightCategories };
     }
 

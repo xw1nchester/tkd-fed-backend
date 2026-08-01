@@ -234,7 +234,7 @@ export class TournamentService {
         return { tournament: this.createDto(existingTournament) };
     }
 
-    async getRequestById(requestId: number) {
+    async getRequestById(requestId: number, requesterUser?: JwtPayload) {
         const tournamentRequest =
             await this.prismaService.tournamentRequest.findFirst({
                 include: {
@@ -245,7 +245,10 @@ export class TournamentService {
                         }
                     }
                 },
-                where: { id: requestId }
+                where: {
+                    id: requestId,
+                    ...this.getRequestAccessWhere(requesterUser)
+                }
             });
 
         if (!tournamentRequest) {
@@ -270,24 +273,6 @@ export class TournamentService {
             createdAt: request.createdAt,
             updatedAt: request.updatedAt
         };
-    }
-
-    private ensureCanModifyRequest(
-        request: TournamentRequest,
-        user: JwtPayload
-    ) {
-        if (user.roles.includes(RoleEnum.SECRETARY)) {
-            return;
-        }
-
-        if (
-            user.roles.includes(RoleEnum.TRAINER) &&
-            request.trainerId === user.id
-        ) {
-            return;
-        }
-
-        throw new NotFoundException();
     }
 
     async getRequestDtoById({
@@ -321,8 +306,7 @@ export class TournamentService {
         return {
             id: athlete.id,
             athlete: this.userService.createDto(athlete.athlete),
-            weightCategory: athlete.weightCategory,
-            firstTrainer: athlete.firstTrainer,
+            weightCategory: athlete.weightCategory
         };
     }
 
@@ -355,21 +339,16 @@ export class TournamentService {
             ...new Set(dto.athletes.map(a => a.weightCategoryId))
         ]);
 
-        const existingRequest =
-            await this.prismaService.tournamentRequestAthlete.findFirst({
-                where: {
-                    athleteId: { in: athleteIds },
-                    request: {
-                        tournamentId,
-                        id: { not: excludedRequestId }
-                    }
-                }
-            });
+        const requestsCount = await this.prismaService.tournamentRequest.count({
+            where: {
+                tournamentId,
+                trainerId,
+                id: { not: excludedRequestId }
+            }
+        });
 
-        if (existingRequest) {
-            throw new BadRequestException(
-                'Некоторые спортсмены уже зарегистрированы в других заявках на этот турнир'
-            );
+        if (requestsCount > 0) {
+            throw new BadRequestException('Заявка на данный турнир уже подана');
         }
 
         if (
@@ -397,10 +376,9 @@ export class TournamentService {
                     trainerId: trainer.id,
                     athletes: {
                         create: dto.athletes.map(
-                            ({ athleteId, weightCategoryId, firstTrainer }) => ({
+                            ({ athleteId, weightCategoryId }) => ({
                                 athleteId,
-                                weightCategoryId,
-                                firstTrainer
+                                weightCategoryId
                             })
                         )
                     }
@@ -414,18 +392,26 @@ export class TournamentService {
     }
 
     private getRequestAccessWhere(
-        user: JwtPayload
+        user?: JwtPayload
     ): Prisma.TournamentRequestWhereInput {
+        if (!user) {
+            return { isAccepted: true };
+        }
+
         if (user.roles.includes(RoleEnum.SECRETARY)) {
             return {};
         }
 
-        return { trainerId: user.id };
+        if (user.roles.includes(RoleEnum.TRAINER)) {
+            return { trainerId: user.id };
+        }
+
+        return { isAccepted: true };
     }
 
     async findAllRequests(
         query: TournamentApplicationQueryDto,
-        requesterUser: JwtPayload
+        requesterUser?: JwtPayload
     ) {
         const { page, limit, tournamentId } = query;
 
@@ -440,6 +426,8 @@ export class TournamentService {
             ...accessWhere,
             ...filterWhere
         };
+
+        console.log({ where });
 
         const skip = (page - 1) * limit;
 
@@ -467,10 +455,9 @@ export class TournamentService {
     async findRequestAthletes(
         requestId: number,
         query: PaginationQueryDto,
-        requesterUser: JwtPayload
+        requesterUser?: JwtPayload
     ) {
-        const request = await this.getRequestById(requestId);
-        this.ensureCanModifyRequest(request, requesterUser);
+        await this.getRequestById(requestId, requesterUser);
 
         const { page, limit } = query;
         const where = { requestId };
@@ -479,7 +466,14 @@ export class TournamentService {
             this.prismaService.tournamentRequestAthlete.findMany({
                 where,
                 include: {
-                    athlete: { include: { roles: true, avatar: true } },
+                    athlete: {
+                        include: {
+                            roles: true,
+                            avatar: true,
+                            belt: true,
+                            sportRank: true
+                        }
+                    },
                     weightCategory: true
                 },
                 orderBy: { id: 'asc' },
@@ -502,8 +496,7 @@ export class TournamentService {
         user: JwtPayload,
         dto: TournamentApplicationRequestDto
     ) {
-        const request = await this.getRequestById(id);
-        this.ensureCanModifyRequest(request, user);
+        const request = await this.getRequestById(id, user);
 
         if (request.isAccepted) {
             throw new BadRequestException('Заявка уже принята');
@@ -518,10 +511,9 @@ export class TournamentService {
                 athletes: {
                     deleteMany: {},
                     create: dto.athletes.map(
-                        ({ athleteId, weightCategoryId, firstTrainer }) => ({
+                        ({ athleteId, weightCategoryId }) => ({
                             athleteId,
-                            weightCategoryId,
-                            firstTrainer
+                            weightCategoryId
                         })
                     )
                 }
@@ -532,8 +524,7 @@ export class TournamentService {
     }
 
     async removeRequest(id: number, user: JwtPayload) {
-        const request = await this.getRequestById(id);
-        this.ensureCanModifyRequest(request, user);
+        const request = await this.getRequestById(id, user);
         const dto = this.createRequestDto(request);
 
         if (request.isAccepted) {

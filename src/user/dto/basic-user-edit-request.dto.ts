@@ -35,4 +35,9 @@ export class BasicUserEditRequestDto {
     })
     @IsEnum(Gender)
     gender: Gender;
+
+    @ApiProperty({ example: 'Дружков Василий Александрович' })
+    @IsString()
+    @IsOptional()
+    firstTrainer: string;
 }

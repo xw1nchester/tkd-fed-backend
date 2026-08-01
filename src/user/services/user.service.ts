@@ -118,6 +118,7 @@ export class UserService {
             roles: Role[];
             teams?: Partial<Team>[];
             belt?: Belt;
+            sportRank?: SportRank;
         }
     ) {
         return {
@@ -129,11 +130,13 @@ export class UserService {
             middleName: user.middleName,
             birthDate: user.birthDate,
             gender: user.gender,
+            firstTrainer: user.firstTrainer,
             isVerified: user.isVerified,
             rating: user.rating,
             roles: user.roles,
             teams: user.teams,
-            belt: user.belt
+            belt: user.belt,
+            sportRank: user.sportRank
         };
     }
 
@@ -182,7 +185,8 @@ export class UserService {
                 lastName: dto.lastName,
                 middleName: dto.middleName,
                 birthDate: new Date(dto.birthDate),
-                gender: dto.gender
+                gender: dto.gender,
+                firstTrainer: dto.firstTrainer
             }
         });
 
@@ -215,6 +219,7 @@ export class UserService {
                 middleName: dto.middleName,
                 birthDate: new Date(dto.birthDate),
                 gender: dto.gender,
+                firstTrainer: dto.firstTrainer,
                 roles: {
                     set: dto.roleIds.map(id => ({ id }))
                 }

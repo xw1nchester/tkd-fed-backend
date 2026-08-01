@@ -1,7 +1,10 @@
 model WeightCategory {
-    id     Int    @id @default(autoincrement())
-    gender Gender @default(MALE)
-    weight Int
+    id                        Int                        @id @default(autoincrement())
+    ageCategoryId             Int                        @map("age_category_id")
+    ageCategory               AgeCategory                @relation(fields: [ageCategoryId], references: [id])
+    gender                    Gender                     @default(MALE)
+    minWeight                 Int?                       @map("min_weight")
+    maxWeight                 Int?                       @map("max_weight")
     tournamentRequestAthletes TournamentRequestAthlete[]
 
     @@map("weight_categories")

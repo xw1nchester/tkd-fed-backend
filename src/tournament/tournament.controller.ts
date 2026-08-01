@@ -87,8 +87,8 @@ export class TournamentController {
         });
     }
 
-    @UseGuards(RoleGuard)
-    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
+    @Public()
+    @UseGuards(OptionalJwtAuthGuard)
     @Get('request')
     @ApiExtraModels(PaginationResponseDto, TournamentRequestResponseDto)
     @ApiOkResponse({
@@ -112,7 +112,7 @@ export class TournamentController {
     })
     async findAllRequests(
         @Query() query: TournamentApplicationQueryDto,
-        @CurrentUser() user: JwtPayload
+        @CurrentUser() user?: JwtPayload
     ) {
         return this.tournamentService.findAllRequests(query, user);
     }
@@ -186,8 +186,8 @@ export class TournamentController {
         });
     }
 
-    @UseGuards(RoleGuard)
-    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
+    @Public()
+    @UseGuards(OptionalJwtAuthGuard)
     @Get('request/:id/athletes')
     @ApiExtraModels(PaginationResponseDto, TournamentRequestAthleteResponseDto)
     @ApiOkResponse({
@@ -212,7 +212,7 @@ export class TournamentController {
     async findRequestAthletes(
         @Param('id', ParseIntPipe) id: number,
         @Query() query: PaginationQueryDto,
-        @CurrentUser() user: JwtPayload
+        @CurrentUser() user?: JwtPayload
     ) {
         return this.tournamentService.findRequestAthletes(id, query, user);
     }

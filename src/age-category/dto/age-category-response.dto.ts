@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { WeightCategoryResponseDto } from '@weight-category/dto/weight-category-response.dto';
 
 class AgeCategoryResponseDto {
     @ApiProperty({ example: 1 })
@@ -12,6 +13,9 @@ class AgeCategoryResponseDto {
 
     @ApiProperty({ example: 20 })
     maxAge: number | null;
+
+    @ApiProperty({ type: WeightCategoryResponseDto, isArray: true })
+    weightCategories: WeightCategoryResponseDto[];
 }
 
 export class AgeCategoryWrapperResponseDto {

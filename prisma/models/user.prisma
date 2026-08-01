@@ -13,7 +13,8 @@ model User {
     middleName                      String?                    @map("middle_name")
     birthDate                       DateTime?                  @map("birth_date")
     gender                          Gender                     @default(MALE)
-    password                        String?
+    firstTrainer                    String?                    @map("first_trainer")
+    password                        String
     isVerified                      Boolean                    @default(false) @map("is_verified")
     rating                          Int                        @default(0)
     createdAt                       DateTime                   @default(now()) @map("created_at")

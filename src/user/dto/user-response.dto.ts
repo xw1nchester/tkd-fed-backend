@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { BeltResponseDto } from '@belt/dto/belt-response.dto';
 import { FileDto } from '@file/dto/file-response.dto';
+import { SportRankResponseDto } from '@sport-rank/dto/sport-rank-response.dto';
 
 class RoleDto {
     @ApiProperty({ example: 1 })
@@ -36,6 +37,9 @@ export class UserResponseDto {
     @ApiProperty({ example: true })
     isVerified: boolean;
 
+    @ApiProperty({ example: 'Дружков Василий Александрович' })
+    firstTrainer: string;
+
     @ApiProperty({ default: 2500 })
     rating: number;
 
@@ -44,6 +48,9 @@ export class UserResponseDto {
 
     @ApiProperty({ type: BeltResponseDto, nullable: true })
     belt: BeltResponseDto;
+
+    @ApiProperty({ type: SportRankResponseDto, nullable: true })
+    sportRank: SportRankResponseDto;
 }
 
 export class TeamShortResponseDto {
