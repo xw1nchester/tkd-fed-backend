@@ -2,6 +2,8 @@ import { IsEnum } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+import { FileDto } from '@file/dto/file-response.dto';
+
 import { TournamentStatus } from '../enums/tournament-status.enum';
 
 export class TournamentResponseDto {
@@ -12,16 +14,16 @@ export class TournamentResponseDto {
     name: string;
 
     @ApiPropertyOptional({
-        example: 'https://example.com/logo.png',
+        type: FileDto,
         nullable: true
     })
-    logo: string | null;
+    logo: FileDto | null;
 
     @ApiPropertyOptional({
-        example: 'https://example.com/banner.png',
+        type: FileDto,
         nullable: true
     })
-    banner: string | null;
+    banner: FileDto | null;
 
     @ApiProperty({ example: '2026-08-15T09:00:00.000Z' })
     startDate: Date;

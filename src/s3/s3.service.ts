@@ -124,6 +124,7 @@ export class S3Service implements OnModuleInit {
                 })
             );
 
+            // возможно не стоит давать публичный url и логировать после загрузки чувствительного файла
             const url = this.getPublicUrl(key);
 
             this.logger.debug(`File uploaded.: ${url}`);
@@ -143,7 +144,7 @@ export class S3Service implements OnModuleInit {
                     Key: key
                 })
             );
-            this.logger.debug('File deleted', key);
+            this.logger.debug(`File deleted ${key}`);
         } catch (err) {
             this.logger.error('Error delete file:', err);
             throw new InternalServerErrorException('Can not delete file');

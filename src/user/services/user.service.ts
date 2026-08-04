@@ -522,34 +522,51 @@ export class UserService {
             throw new NotFoundException('Файл не найден');
         }
 
-        await this.prismaService.user.update({
-            where: { id },
-            data: {
-                beltId,
-                sportRankId,
-                documents: {
-                    deleteMany: {},
-                    create: documents.map(({ type, fileId }) => ({
-                        type,
-                        fileId
-                    }))
-                },
-                documentVerification: {
-                    upsert: {
-                        create: {
-                            status: VerificationStatus.PENDING
-                        },
-                        update: {
-                            status: status ?? VerificationStatus.PENDING,
-                            // TODO: оставлять старый коммент
-                            comment,
-                            reverificationAt: reverificationAt
-                                ? new Date(reverificationAt)
-                                : null
+        const oldDocuments = await this.prismaService.document.findMany({
+            where: { userId: id },
+            select: { fileId: true }
+        });
+
+        const newFileIds = new Set(documents.map(d => d.fileId));
+        const fileIdsToDelete = oldDocuments
+            .map(d => d.fileId)
+            .filter(fileId => !newFileIds.has(fileId));
+
+        await this.prismaService.$transaction(async tx => {
+            await tx.user.update({
+                where: { id },
+                data: {
+                    beltId,
+                    sportRankId,
+                    documents: {
+                        deleteMany: {},
+                        create: documents.map(({ type, fileId }) => ({
+                            type,
+                            fileId
+                        }))
+                    },
+                    documentVerification: {
+                        upsert: {
+                            create: {
+                                status: VerificationStatus.PENDING
+                            },
+                            update: {
+                                status: status ?? VerificationStatus.PENDING,
+                                comment,
+                                reverificationAt: reverificationAt
+                                    ? new Date(reverificationAt)
+                                    : null
+                            }
                         }
                     }
                 }
-            }
+            });
+
+            await Promise.all(
+                fileIdsToDelete.map(fileId =>
+                    this.fileService.delete(fileId, tx)
+                )
+            );
         });
 
         return await this.getDetailedUserInfoDto(id);

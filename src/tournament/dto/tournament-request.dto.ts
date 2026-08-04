@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsBoolean,
     IsDateString,
@@ -17,15 +17,21 @@ export class TournamentRequestDto {
     @IsNotEmpty()
     name: string;
 
-    @ApiPropertyOptional({ example: 'https://example.com/logo.png' })
+    @ApiPropertyOptional({ example: 1, nullable: true })
     @IsOptional()
-    @IsString()
-    logo?: string;
+    @IsInt()
+    @Transform(({ value }) =>
+        value === null || value === undefined ? value : Number(value)
+    )
+    logoId?: number | null;
 
-    @ApiPropertyOptional({ example: 'https://example.com/banner.png' })
+    @ApiPropertyOptional({ example: 2, nullable: true })
     @IsOptional()
-    @IsString()
-    banner?: string;
+    @IsInt()
+    @Transform(({ value }) =>
+        value === null || value === undefined ? value : Number(value)
+    )
+    bannerId?: number | null;
 
     @ApiProperty({ example: '2024-06-01' })
     @IsDateString()

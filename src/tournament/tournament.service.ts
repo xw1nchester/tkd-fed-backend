@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 
 import { JwtPayload } from '@auth/interfaces';
+import { FileService } from '@file/file.service';
 import { PrismaService } from '@prisma/prisma.service';
 import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
@@ -33,7 +34,8 @@ export class TournamentService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly userService: UserService,
-        private readonly weightCategoryService: WeightCategoryService
+        private readonly weightCategoryService: WeightCategoryService,
+        private readonly fileService: FileService
     ) {}
 
     private getTournamentStatus(
@@ -53,10 +55,15 @@ export class TournamentService {
         return TournamentStatus.ONGOING;
     }
 
-    createDto(tournament: Tournament) {
+    createDto(tournament: Tournament & { logo?: File; banner?: File }) {
         delete tournament.creatorId;
+        delete tournament.logoId;
+        delete tournament.bannerId;
+
         return {
             ...tournament,
+            logo: this.fileService.createDto(tournament.logo),
+            banner: this.fileService.createDto(tournament.banner),
             status: this.getTournamentStatus(
                 tournament.startDate,
                 tournament.endDate
@@ -66,7 +73,11 @@ export class TournamentService {
 
     async getById(id: number) {
         const tournament = await this.prismaService.tournament.findUnique({
-            where: { id }
+            where: { id },
+            include: {
+                logo: true,
+                banner: true
+            }
         });
 
         if (!tournament) {
@@ -86,7 +97,11 @@ export class TournamentService {
         const accessWhere = this.getAccessWhere(requesterUser);
 
         const tournament = await this.prismaService.tournament.findFirst({
-            where: { id, ...accessWhere }
+            where: { id, ...accessWhere },
+            include: {
+                logo: true,
+                banner: true
+            }
         });
 
         if (!tournament) {
@@ -109,9 +124,14 @@ export class TournamentService {
         const endDate = new Date(dto.endDate);
 
         this.validateDates(startDate, endDate);
+        await this.validateTournamentFiles(dto);
 
         const tournament = await this.prismaService.tournament.create({
-            data: { ...dto, startDate, endDate, creatorId }
+            data: { ...dto, startDate, endDate, creatorId },
+            include: {
+                logo: true,
+                banner: true
+            }
         });
 
         return { tournament: this.createDto(tournament) };
@@ -175,6 +195,10 @@ export class TournamentService {
         const [tournaments, total] = await this.prismaService.$transaction([
             this.prismaService.tournament.findMany({
                 where,
+                include: {
+                    logo: true,
+                    banner: true
+                },
                 orderBy: {
                     createdAt: 'desc'
                 },
@@ -192,6 +216,22 @@ export class TournamentService {
             page,
             limit
         );
+    }
+
+    private async validateTournamentFiles(dto: TournamentRequestDto) {
+        const fileIds = [dto.logoId, dto.bannerId].filter(
+            (id): id is number => id !== undefined && id !== null
+        );
+
+        if (!fileIds.length) {
+            return;
+        }
+
+        const filesExist = await this.fileService.exists(fileIds);
+
+        if (!filesExist) {
+            throw new NotFoundException('Файл не найден');
+        }
     }
 
     private ensureCanModify(tournament: Tournament, user: JwtPayload) {
@@ -217,20 +257,49 @@ export class TournamentService {
         const endDate = new Date(dto.endDate);
 
         this.validateDates(startDate, endDate);
+        await this.validateTournamentFiles(dto);
 
-        const tournament = await this.prismaService.tournament.update({
-            where: { id },
-            data: { ...dto, startDate, endDate }
+        await this.prismaService.$transaction(async tx => {
+            await tx.tournament.update({
+                where: { id },
+                data: { ...dto, startDate, endDate }
+            });
+
+            if (
+                existingTournament.logoId &&
+                existingTournament.logoId != dto.logoId &&
+                existingTournament.logoId != dto.bannerId
+            ) {
+                await this.fileService.delete(existingTournament.logoId, tx);
+            }
+
+            if (
+                existingTournament.bannerId &&
+                existingTournament.bannerId != dto.bannerId &&
+                existingTournament.bannerId != dto.logoId
+            ) {
+                await this.fileService.delete(existingTournament.bannerId, tx);
+            }
         });
 
-        return { tournament: this.createDto(tournament) };
+        return this.getDtoById({ id, requesterUser: user });
     }
 
     async remove(id: number, user: JwtPayload) {
         const existingTournament = await this.getById(id);
         this.ensureCanModify(existingTournament, user);
 
-        await this.prismaService.tournament.delete({ where: { id } });
+        await this.prismaService.$transaction(async tx => {
+            await tx.tournament.delete({ where: { id } });
+
+            for (const fileId of [
+                existingTournament.logoId,
+                existingTournament.bannerId
+            ]) {
+                if (fileId) await this.fileService.delete(fileId, tx);
+            }
+        });
+
         return { tournament: this.createDto(existingTournament) };
     }
 

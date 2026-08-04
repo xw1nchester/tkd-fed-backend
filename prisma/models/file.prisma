@@ -1,14 +1,16 @@
 model File {
-    id         Int        @id @default(autoincrement())
-    userId     Int        @map("user_id")
-    user       User       @relation("UserFiles", fields: [userId], references: [id], onDelete: Cascade)
-    storageKey String     @map("storage_key")
-    mimeType   String     @map("mime_type")
-    filename   String
-    size       Int        @default(0)
-    createdAt  DateTime   @default(now()) @map("created_at")
-    documents  Document[]
-    avatars    User[]     @relation("UserAvatar")
+    id                Int          @id @default(autoincrement())
+    userId            Int          @map("user_id")
+    user              User         @relation("UserFiles", fields: [userId], references: [id], onDelete: Cascade)
+    storageKey        String       @map("storage_key")
+    mimeType          String       @map("mime_type")
+    filename          String
+    size              Int          @default(0)
+    createdAt         DateTime     @default(now()) @map("created_at")
+    documents         Document[]
+    avatars           User[]       @relation("UserAvatar")
+    tournamentLogos   Tournament[] @relation("TournamentLogo")
+    tournamentBanners Tournament[] @relation("TournamentBanner")
 
     @@map("files")
 }

@@ -7,7 +7,7 @@ model User {
     id                              Int                        @id @default(autoincrement())
     email                           String                     @unique
     avatarId                        Int?                       @map("avatar_id")
-    avatar                          File?                      @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: Cascade)
+    avatar                          File?                      @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
     firstName                       String?                    @map("first_name")
     lastName                        String?                    @map("last_name")
     middleName                      String?                    @map("middle_name")

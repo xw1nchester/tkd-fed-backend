@@ -1,8 +1,10 @@
 model Tournament {
     id                    Int                 @id @default(autoincrement())
     name                  String
-    logo                  String?
-    banner                String?
+    logoId                Int?                @map("logo_id")
+    logo                  File?               @relation("TournamentLogo", fields: [logoId], references: [id], onDelete: SetNull)
+    bannerId              Int?                @map("banner_id")
+    banner                File?               @relation("TournamentBanner", fields: [bannerId], references: [id], onDelete: SetNull)
     startDate             DateTime            @map("start_date")
     endDate               DateTime            @map("end_date")
     maxParticipants       Int?                @map("max_participants")
