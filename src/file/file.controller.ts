@@ -1,7 +1,4 @@
-import { randomUUID } from 'crypto';
-import { extname } from 'path';
-
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 
 import {
     BadRequestException,
@@ -34,13 +31,10 @@ export class FileController {
 
     @UseInterceptors(
         FilesInterceptor('files', 10, {
-            storage: diskStorage({
-                destination: 'uploads',
-                filename: (req, file, cb) => {
-                    const ext = extname(file.originalname);
-                    cb(null, randomUUID() + ext);
-                }
-            })
+            storage: memoryStorage(),
+            limits: {
+                fileSize: 10 * 1024 * 1024 // 10 MB на один файл
+            }
         })
     )
     @Post('upload')
@@ -71,13 +65,13 @@ export class FileController {
             );
         }
 
-        return await this.fileService.save(
-            user.id,
-            files.map(({ filename, mimetype, originalname }) => ({
-                storageKey: filename,
-                mimeType: mimetype,
-                filename: originalname
-            }))
-        );
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        const maxTotalSize = 30 * 1024 * 1024;
+
+        if (totalSize > maxTotalSize) {
+            throw new BadRequestException('Превышен общий объем файлов');
+        }
+
+        return await this.fileService.save(user.id, files);
     }
 }

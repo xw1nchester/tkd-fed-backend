@@ -1,3 +1,4 @@
+// TODO: deprecated
 export interface CreateFileDto {
     storageKey: string;
     mimeType: string;

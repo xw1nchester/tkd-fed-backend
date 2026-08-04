@@ -23,7 +23,7 @@ export class FileDto {
     @ApiProperty({
         example: '6492322426.jpeg'
     })
-    name: string;
+    filename: string;
 
     @ApiProperty({
         example: 245760

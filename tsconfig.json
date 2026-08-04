@@ -53,7 +53,9 @@
             "@belt-attestation": ["src/belt-attestation"],
             "@belt-attestation/*": ["src/belt-attestation/*"],
             "@tournament": ["src/tournament"],
-            "@tournament/*": ["src/tournament/*"]
+            "@tournament/*": ["src/tournament/*"],
+            "@s3": ["src/s3"],
+            "@s3/*": ["src/s3/*"]
         }
     }
 }

@@ -146,31 +146,41 @@ export class UserService {
     }
 
     async updateAvatar(id: number, fileId: number) {
-        await this.getById(id);
+        const user = await this.getById(id);
 
-        const fileExists = await this.fileService.exists([fileId]);
+        const fileExists = await this.fileService.exists(fileId, id);
 
         if (!fileExists) {
             throw new NotFoundException('Файл не найден');
         }
 
-        await this.prismaService.user.update({
-            where: { id },
-            data: { avatarId: fileId }
+        await this.prismaService.$transaction(async tx => {
+            await tx.user.update({
+                where: { id },
+                data: { avatarId: fileId }
+            });
+
+            if (user.avatarId && user.avatarId != fileId) {
+                await this.fileService.delete(user.avatarId, tx);
+            }
         });
 
         return await this.getDtoById(id);
     }
 
     async deleteAvatar(id: number) {
-        await this.getById(id);
+        const user = await this.getById(id);
 
-        await this.prismaService.user.update({
-            where: { id },
-            data: { avatarId: null }
+        await this.prismaService.$transaction(async tx => {
+            await tx.user.update({
+                where: { id },
+                data: { avatarId: null }
+            });
+
+            if (user.avatarId) {
+                await this.fileService.delete(user.avatarId, tx);
+            }
         });
-
-        // TODO: удалить файл
 
         return await this.getDtoById(id);
     }
@@ -409,7 +419,7 @@ export class UserService {
         return users;
     }
 
-    createUserDetailedDto({
+    async createUserDetailedDto({
         belt,
         sportRank,
         documents,
@@ -423,12 +433,14 @@ export class UserService {
         return {
             belt,
             sportRank,
-            documents: documents.map(({ id, type, createdAt, file }) => ({
-                id,
-                type,
-                createdAt,
-                file: this.fileService.createDto(file)
-            })),
+            documents: await Promise.all(
+                documents.map(async ({ id, type, createdAt, file }) => ({
+                    id,
+                    type,
+                    createdAt,
+                    file: await this.fileService.createSignedDto(file)
+                }))
+            ),
             documentVerification: documentVerification
                 ? {
                       id: documentVerification.id,
@@ -464,7 +476,7 @@ export class UserService {
             }
         });
 
-        return { user: this.createUserDetailedDto(data) };
+        return { user: await this.createUserDetailedDto(data) };
     }
 
     async getDetailedUserInfoByTrainer(userId: number, trainerId: number) {
@@ -501,6 +513,7 @@ export class UserService {
             throw new NotFoundException('Разряд не найден');
         }
 
+        // TODO: если загружает обычный пользователь, то необходимо проверить, что файл его
         const filesExists = await this.fileService.exists(
             documents.map(d => d.fileId)
         );

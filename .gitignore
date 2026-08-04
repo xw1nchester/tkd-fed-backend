@@ -1,8 +1,8 @@
 # compiled output
 /dist
 /node_modules
-/uploads
-db
+/db
+/minio_data
 
 .env
 

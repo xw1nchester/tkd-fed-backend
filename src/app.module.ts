@@ -1,9 +1,6 @@
-import { join } from 'path';
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ServeStaticModule } from '@nestjs/serve-static';
 
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 
@@ -25,15 +22,12 @@ import { TeamModule } from './team/team.module';
 import { TournamentModule } from './tournament/tournament.module';
 import { UserModule } from './user/user.module';
 import { WeightCategoryModule } from './weight-category/weight-category.module';
+import { S3Module } from '@s3/s3.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         PrismaModule,
-        ServeStaticModule.forRoot({
-            serveRoot: '/static',
-            rootPath: join(__dirname, '..', '..', 'uploads')
-        }),
         AuthModule,
         UserModule,
         MailModule,
@@ -48,7 +42,8 @@ import { WeightCategoryModule } from './weight-category/weight-category.module';
         TournamentModule,
         BeltAttestationModule,
         AgeCategoryModule,
-        WeightCategoryModule
+        WeightCategoryModule,
+        S3Module
     ],
     controllers: [AppController],
     providers: [
