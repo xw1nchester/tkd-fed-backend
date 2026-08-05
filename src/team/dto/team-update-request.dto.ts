@@ -1,6 +1,7 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TeamUpdateRequestDto {
     @ApiProperty({ example: 'Старшая группа' })
@@ -8,8 +9,11 @@ export class TeamUpdateRequestDto {
     @IsNotEmpty()
     name: string;
 
-    @ApiProperty({ example: 'e7cb06e8-1335-4b5c-bb46-0edfd4015aa1.jpeg' })
-    @IsString()
+    @ApiPropertyOptional({ example: 1, nullable: true })
     @IsOptional()
-    logoKey: string;
+    @IsInt()
+    @Transform(({ value }) =>
+        value === null || value === undefined ? value : Number(value)
+    )
+    logoId?: number | null;
 }

@@ -11,6 +11,7 @@ model File {
     avatars           User[]       @relation("UserAvatar")
     tournamentLogos   Tournament[] @relation("TournamentLogo")
     tournamentBanners Tournament[] @relation("TournamentBanner")
+    teamLogos         Team[]       @relation("TeamLogo")
 
     @@map("files")
 }

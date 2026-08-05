@@ -1,4 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+import { FileDto } from '@file/dto/file-response.dto';
 
 export class TeamResponseDto {
     @ApiProperty({ example: 1 })
@@ -7,16 +9,11 @@ export class TeamResponseDto {
     @ApiProperty({ example: 'Медитация' })
     name: string;
 
-    @ApiProperty({
-        example: '64c43ba9-b062-4875-a989-291948999b4e.jpeg'
+    @ApiPropertyOptional({
+        type: FileDto,
+        nullable: true
     })
-    logoKey: string;
-
-    @ApiProperty({
-        example:
-            'http://localhost:8080/static/64c43ba9-b062-4875-a989-291948999b4e.jpeg'
-    })
-    logoUrl: string;
+    logo: FileDto | null;
 
     @ApiProperty({ example: '2026-02-28T17:00:00.000Z' })
     createdAt: string;

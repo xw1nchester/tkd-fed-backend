@@ -1,13 +1,12 @@
 model Team {
     id        Int      @id @default(autoincrement())
     name      String
-    logoKey   String?  @map("logo_key")
+    logoId    Int?     @map("logo_id")
+    logo      File?    @relation("TeamLogo", fields: [logoId], references: [id], onDelete: SetNull)
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
-
     creatorId Int?  @map("creator_id")
     creator   User? @relation("TeamCreator", fields: [creatorId], references: [id])
-
     members User[]
 
     @@map("teams")

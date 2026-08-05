@@ -1,12 +1,12 @@
-import { Prisma, Team } from '@prisma-client';
+import { File, Prisma, Team } from '@prisma-client';
 
 import {
     ForbiddenException,
     Injectable,
     NotFoundException
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
+import { FileService } from '@file/file.service';
 import { PrismaService } from '@prisma/prisma.service';
 import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import { PaginationDto } from '@shared/dto/pagination.dto';
@@ -20,24 +20,24 @@ export class TeamService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly userService: UserService,
-        private readonly configService: ConfigService
+        private readonly fileService: FileService
     ) {}
 
     createDto(
         team: Team & {
+            logo?: File;
             _count: {
                 members: number;
             };
         }
     ) {
-        const staticUrl = this.configService.get('STATIC_URL');
-        const logoUrl = team.logoKey ? `${staticUrl}/${team.logoKey}` : null;
+        delete team.creatorId;
+        delete team.logoId;
 
         return {
             id: team.id,
             name: team.name,
-            logoKey: team.logoKey,
-            logoUrl,
+            logo: this.fileService.createDto(team.logo),
             createdAt: team.createdAt,
             updatedAt: team.updatedAt,
             membersCount: team._count.members
@@ -47,7 +47,10 @@ export class TeamService {
     async getById(id: number) {
         const team = await this.prismaService.team.findFirst({
             where: { id },
-            include: { _count: { select: { members: true } } }
+            include: {
+                logo: true,
+                _count: { select: { members: true } }
+            }
         });
 
         if (!team) {
@@ -67,11 +70,12 @@ export class TeamService {
             creatorId,
             dto.memberIds
         );
+        await this.validateTeamFiles(dto);
 
         const createdTeam = await this.prismaService.team.create({
             data: {
                 name: dto.name,
-                logoKey: dto.logoKey,
+                logoId: dto.logoId,
                 creatorId,
                 members: {
                     connect: dto.memberIds.map(id => ({ id }))
@@ -100,7 +104,10 @@ export class TeamService {
 
         const data = await this.prismaService.team.findMany({
             where,
-            include: { _count: { select: { members: true } } },
+            include: {
+                logo: true,
+                _count: { select: { members: true } }
+            },
             orderBy: { createdAt: 'desc' },
             take: limit,
             skip
@@ -115,6 +122,18 @@ export class TeamService {
         return new PaginationDto(dtos, totalCount, page, limit);
     }
 
+    private async validateTeamFiles(dto: TeamUpdateRequestDto) {
+        if (dto.logoId === undefined || dto.logoId === null) {
+            return;
+        }
+
+        const fileExists = await this.fileService.exists(dto.logoId);
+
+        if (!fileExists) {
+            throw new NotFoundException('Файл не найден');
+        }
+    }
+
     async update(id: number, creatorId: number, dto: TeamUpdateRequestDto) {
         const existingTeam = await this.getById(id);
 
@@ -122,11 +141,19 @@ export class TeamService {
             throw new ForbiddenException();
         }
 
-        await this.prismaService.team.update({
-            where: { id },
-            data: {
-                name: dto.name,
-                logoKey: dto.logoKey
+        await this.validateTeamFiles(dto);
+
+        await this.prismaService.$transaction(async tx => {
+            await tx.team.update({
+                where: { id },
+                data: {
+                    name: dto.name,
+                    logoId: dto.logoId
+                }
+            });
+
+            if (existingTeam.logoId && existingTeam.logoId !== dto.logoId) {
+                await this.fileService.delete(existingTeam.logoId, tx);
             }
         });
 
@@ -140,9 +167,16 @@ export class TeamService {
             throw new ForbiddenException();
         }
 
-        const dto = await this.getDtoById(id);
+        const logoId = existingTeam.logoId;
+        const dto = { team: this.createDto(existingTeam) };
 
-        await this.prismaService.team.delete({ where: { id } });
+        await this.prismaService.$transaction(async tx => {
+            await tx.team.delete({ where: { id } });
+
+            if (logoId) {
+                await this.fileService.delete(logoId, tx);
+            }
+        });
 
         return dto;
     }
