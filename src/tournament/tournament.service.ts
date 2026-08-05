@@ -472,7 +472,12 @@ export class TournamentService {
         }
 
         if (user.roles.includes(RoleEnum.TRAINER)) {
-            return { trainerId: user.id };
+            return {
+                OR: [
+                    { trainerId: user.id },
+                    { tournament: { creatorId: user.id } }
+                ]
+            };
         }
 
         return { isAccepted: true };
@@ -482,7 +487,7 @@ export class TournamentService {
         query: TournamentApplicationQueryDto,
         requesterUser?: JwtPayload
     ) {
-        const { page, limit, tournamentId } = query;
+        const { page, limit, tournamentId, my } = query;
 
         const accessWhere = this.getRequestAccessWhere(requesterUser);
         const filterWhere: Prisma.TournamentRequestWhereInput = {};
@@ -491,12 +496,13 @@ export class TournamentService {
             filterWhere.tournamentId = tournamentId;
         }
 
-        const where = {
-            ...accessWhere,
-            ...filterWhere
-        };
+        if (my && requesterUser) {
+            filterWhere.trainerId = requesterUser.id;
+        }
 
-        console.log({ where });
+        const where: Prisma.TournamentRequestWhereInput = {
+            AND: [accessWhere, filterWhere]
+        };
 
         const skip = (page - 1) * limit;
 

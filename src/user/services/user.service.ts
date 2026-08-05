@@ -148,7 +148,8 @@ export class UserService {
     async updateAvatar(id: number, fileId: number) {
         const user = await this.getById(id);
 
-        const fileExists = await this.fileService.exists(fileId, id);
+        // TODO: если загружает обычный пользователь, то необходимо проверить, что файл его
+        const fileExists = await this.fileService.exists(fileId);
 
         if (!fileExists) {
             throw new NotFoundException('Файл не найден');
