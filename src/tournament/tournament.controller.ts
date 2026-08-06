@@ -241,7 +241,7 @@ export class TournamentController {
     }
 
     @UseGuards(RoleGuard)
-    @Role(RoleEnum.SECRETARY)
+    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
     @Patch('request/:id/accept')
     @ApiOkResponse({ type: TournamentRequestWrapperResponseDto })
     async acceptRequest(
@@ -252,7 +252,7 @@ export class TournamentController {
     }
 
     @UseGuards(RoleGuard)
-    @Role(RoleEnum.SECRETARY)
+    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
     @Patch('request/:id/reject')
     @ApiOkResponse({ type: TournamentRequestWrapperResponseDto })
     async rejectRequest(

@@ -55,13 +55,20 @@ export class TournamentService {
         return TournamentStatus.ONGOING;
     }
 
-    createDto(tournament: Tournament & { logo?: File; banner?: File }) {
+    createDto(
+        tournament: Tournament & {
+            creator: User & { roles: Role[]; avatar: File };
+            logo?: File;
+            banner?: File;
+        }
+    ) {
         delete tournament.creatorId;
         delete tournament.logoId;
         delete tournament.bannerId;
 
         return {
             ...tournament,
+            creator: this.userService.createDto(tournament.creator),
             logo: this.fileService.createDto(tournament.logo),
             banner: this.fileService.createDto(tournament.banner),
             status: this.getTournamentStatus(
@@ -76,7 +83,8 @@ export class TournamentService {
             where: { id },
             include: {
                 logo: true,
-                banner: true
+                banner: true,
+                creator: { include: { avatar: true, roles: true } }
             }
         });
 
@@ -100,7 +108,8 @@ export class TournamentService {
             where: { id, ...accessWhere },
             include: {
                 logo: true,
-                banner: true
+                banner: true,
+                creator: { include: { avatar: true, roles: true } }
             }
         });
 
@@ -130,7 +139,8 @@ export class TournamentService {
             data: { ...dto, startDate, endDate, creatorId },
             include: {
                 logo: true,
-                banner: true
+                banner: true,
+                creator: { include: { avatar: true, roles: true } }
             }
         });
 
@@ -197,7 +207,8 @@ export class TournamentService {
                 where,
                 include: {
                     logo: true,
-                    banner: true
+                    banner: true,
+                    creator: { include: { avatar: true, roles: true } }
                 },
                 orderBy: {
                     createdAt: 'desc'
@@ -247,6 +258,24 @@ export class TournamentService {
         }
 
         throw new NotFoundException();
+    }
+
+    private ensureCanModerateRequest(
+        request: TournamentRequest & { tournament: Tournament },
+        user: JwtPayload
+    ) {
+        if (user.roles.includes(RoleEnum.SECRETARY)) {
+            return;
+        }
+
+        if (
+            user.roles.includes(RoleEnum.TRAINER) &&
+            request.tournament.creatorId === user.id
+        ) {
+            return;
+        }
+
+        throw new NotFoundException('Заявка на турнир не найдена');
     }
 
     async update(id: number, user: JwtPayload, dto: TournamentRequestDto) {
@@ -308,6 +337,7 @@ export class TournamentService {
             await this.prismaService.tournamentRequest.findFirst({
                 include: {
                     trainer: { include: { avatar: true, roles: true } },
+                    tournament: true,
                     _count: {
                         select: {
                             athletes: true
@@ -329,8 +359,9 @@ export class TournamentService {
 
     createRequestDto(
         request: TournamentRequest & {
-            _count: { athletes: number };
             trainer: User & { roles: Role[] };
+            tournament: Tournament;
+            _count: { athletes: number };
         }
     ) {
         return {
@@ -339,6 +370,14 @@ export class TournamentService {
             isAccepted: request.isAccepted,
             trainer: this.userService.createDto(request.trainer),
             athletesCount: request._count.athletes,
+            tournament: {
+                id: request.tournament.id,
+                name: request.tournament.name,
+                status: this.getTournamentStatus(
+                    request.tournament.startDate,
+                    request.tournament.endDate
+                )
+            },
             createdAt: request.createdAt,
             updatedAt: request.updatedAt
         };
@@ -355,6 +394,7 @@ export class TournamentService {
             where: { id, ...this.getRequestAccessWhere(requesterUser) },
             include: {
                 trainer: { include: { avatar: true, roles: true } },
+                tournament: true,
                 _count: { select: { athletes: true } }
             }
         });
@@ -511,6 +551,7 @@ export class TournamentService {
                 where,
                 include: {
                     trainer: { include: { avatar: true, roles: true } },
+                    tournament: true,
                     _count: { select: { athletes: true } }
                 },
                 orderBy: { createdAt: 'desc' },
@@ -613,7 +654,7 @@ export class TournamentService {
         return { tournamentRequest: dto };
     }
 
-    async acceptRequest(id: number, secretary: JwtPayload) {
+    async acceptRequest(id: number, requesterUser: JwtPayload) {
         await this.prismaService.$transaction(async tx => {
             const request = await tx.tournamentRequest.findFirst({
                 where: { id },
@@ -626,6 +667,8 @@ export class TournamentService {
             if (!request) {
                 throw new NotFoundException('Заявка на турнир не найдена');
             }
+
+            this.ensureCanModerateRequest(request, requesterUser);
 
             if (request.isAccepted) {
                 throw new BadRequestException('Заявка уже принята');
@@ -664,11 +707,11 @@ export class TournamentService {
 
         return this.getRequestDtoById({
             id,
-            requesterUser: secretary
+            requesterUser
         });
     }
 
-    async rejectRequest(id: number, secretary: JwtPayload) {
+    async rejectRequest(id: number, requesterUser: JwtPayload) {
         await this.prismaService.$transaction(async tx => {
             const request = await tx.tournamentRequest.findFirst({
                 where: { id },
@@ -681,6 +724,8 @@ export class TournamentService {
             if (!request) {
                 throw new NotFoundException('Заявка на турнир не найдена');
             }
+
+            this.ensureCanModerateRequest(request, requesterUser);
 
             if (!request.isAccepted) {
                 throw new BadRequestException('Заявка еще не принята');
@@ -707,7 +752,7 @@ export class TournamentService {
 
         return this.getRequestDtoById({
             id,
-            requesterUser: secretary
+            requesterUser
         });
     }
 }

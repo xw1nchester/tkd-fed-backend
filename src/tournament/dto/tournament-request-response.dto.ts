@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { UserResponseDto } from '@user/dto/user-response.dto';
 import { WeightCategoryResponseDto } from '@weight-category/dto/weight-category-response.dto';
+import { TournamentShortResponseDto } from './tournament-response.dto';
 
 export class TournamentRequestResponseDto {
     @ApiProperty({ example: 1 })
@@ -18,6 +19,9 @@ export class TournamentRequestResponseDto {
 
     @ApiProperty({ example: 3 })
     athletesCount: number;
+
+    @ApiProperty({ type: TournamentShortResponseDto })
+    tournament: TournamentShortResponseDto;
 
     @ApiProperty({ example: '2026-07-23T10:30:00.000Z' })
     createdAt: Date;

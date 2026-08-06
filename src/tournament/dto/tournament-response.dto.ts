@@ -5,6 +5,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FileDto } from '@file/dto/file-response.dto';
 
 import { TournamentStatus } from '../enums/tournament-status.enum';
+import { UserResponseDto } from '@user/dto/user-response.dto';
 
 export class TournamentResponseDto {
     @ApiProperty({ example: 1 })
@@ -63,6 +64,26 @@ export class TournamentResponseDto {
 
     @ApiProperty()
     updatedAt: Date;
+
+    @ApiProperty({
+        enum: TournamentStatus,
+        example: TournamentStatus.UPCOMING,
+        description:
+            'UPCOMING - идет набор; ONGOING - в процессе; FINISHED - окончен'
+    })
+    @IsEnum(TournamentStatus)
+    status?: TournamentStatus;
+
+    @ApiProperty({ type: UserResponseDto })
+    creator: UserResponseDto;
+}
+
+export class TournamentShortResponseDto {
+    @ApiProperty({ example: 1 })
+    id: number;
+
+    @ApiProperty({ example: 'Открытый кубок города' })
+    name: string;
 
     @ApiProperty({
         enum: TournamentStatus,
