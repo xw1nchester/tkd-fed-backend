@@ -37,7 +37,7 @@ export class TeamService {
         return {
             id: team.id,
             name: team.name,
-            logo: this.fileService.createDto(team.logo),
+            logo: this.fileService.createPublicDto(team.logo),
             createdAt: team.createdAt,
             updatedAt: team.updatedAt,
             membersCount: team._count.members

@@ -124,7 +124,7 @@ export class UserService {
         return {
             id: user.id,
             email: user.email,
-            avatar: this.fileService.createDto(user.avatar),
+            avatar: this.fileService.createPublicDto(user.avatar),
             firstName: user.firstName,
             lastName: user.lastName,
             middleName: user.middleName,
@@ -439,7 +439,7 @@ export class UserService {
                     id,
                     type,
                     createdAt,
-                    file: await this.fileService.createSignedDto(file)
+                    file: await this.fileService.createPrivateDto(file)
                 }))
             ),
             documentVerification: documentVerification

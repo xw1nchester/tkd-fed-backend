@@ -2,12 +2,12 @@ import { memoryStorage } from 'multer';
 
 import {
     BadRequestException,
+    Body,
     Controller,
     Post,
     UploadedFiles,
     UseInterceptors
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
     ApiBearerAuth,
@@ -18,16 +18,15 @@ import {
 
 import { CurrentUser } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
+import { FileVisibility } from '@s3/s3.service';
 
 import { FilesResponseDto } from './dto/file-response.dto';
+import { FileUploadRequestDto } from './dto/file-upload-request.dto';
 import { FileService } from './file.service';
 
 @Controller('file')
 export class FileController {
-    constructor(
-        private readonly configService: ConfigService,
-        private readonly fileService: FileService
-    ) {}
+    constructor(private readonly fileService: FileService) {}
 
     @UseInterceptors(
         FilesInterceptor('files', 10, {
@@ -44,6 +43,11 @@ export class FileController {
         schema: {
             type: 'object',
             properties: {
+                visibility: {
+                    type: 'string',
+                    enum: Object.values(FileVisibility),
+                    default: FileVisibility.PUBLIC
+                },
                 files: {
                     type: 'array',
                     items: {
@@ -57,6 +61,7 @@ export class FileController {
     @ApiOkResponse({ type: FilesResponseDto })
     async upload(
         @CurrentUser() user: JwtPayload,
+        @Body() dto: FileUploadRequestDto,
         @UploadedFiles() files: Express.Multer.File[]
     ) {
         if (!files || files.length == 0) {
@@ -72,6 +77,6 @@ export class FileController {
             throw new BadRequestException('Превышен общий объем файлов');
         }
 
-        return await this.fileService.save(user.id, files);
+        return await this.fileService.save(user.id, files, dto.visibility);
     }
 }

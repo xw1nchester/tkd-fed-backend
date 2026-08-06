@@ -16,6 +16,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 
+export enum FileVisibility {
+    PUBLIC = 'public',
+    PRIVATE = 'private'
+}
+
 @Injectable()
 export class S3Service implements OnModuleInit {
     private logger = new Logger(S3Service.name);
@@ -23,24 +28,26 @@ export class S3Service implements OnModuleInit {
 
     constructor(private configService: ConfigService) {}
 
+    private get bucket() {
+        return this.configService.getOrThrow<string>('S3_BUCKET');
+    }
+
     private async createBucketIfNotExists() {
         try {
             await this.s3.send(
                 new CreateBucketCommand({
-                    Bucket: this.configService.get('S3_BUCKET')
+                    Bucket: this.bucket
                 })
             );
             this.logger.debug(
-                `Bucket '${this.configService.get('S3_BUCKET')}' created or already exists.`
+                `Bucket '${this.bucket}' created or already exists.`
             );
         } catch (err) {
             if (
                 err?.name === 'BucketAlreadyOwnedByYou' ||
                 err?.name === 'BucketAlreadyExists'
             ) {
-                this.logger.debug(
-                    `Bucket '${this.configService.get('S3_BUCKET')}' already exists.`
-                );
+                this.logger.debug(`Bucket '${this.bucket}' already exists.`);
             } else {
                 this.logger.error('Error creating bucket:', err);
                 throw err;
@@ -48,18 +55,16 @@ export class S3Service implements OnModuleInit {
         }
     }
 
-    private async makeBucketPublic() {
+    private async makePublicPrefixReadable() {
         const policy = {
             Version: '2012-10-17',
             Statement: [
                 {
-                    Sid: 'PublicRead',
+                    Sid: 'PublicReadOnlyPublicPrefix',
                     Effect: 'Allow',
                     Principal: '*',
                     Action: ['s3:GetObject'],
-                    Resource: [
-                        `arn:aws:s3:::${this.configService.get('S3_BUCKET')}/*`
-                    ]
+                    Resource: [`arn:aws:s3:::${this.bucket}/public/*`]
                 }
             ]
         };
@@ -67,12 +72,12 @@ export class S3Service implements OnModuleInit {
         try {
             await this.s3.send(
                 new PutBucketPolicyCommand({
-                    Bucket: this.configService.get('S3_BUCKET'),
+                    Bucket: this.bucket,
                     Policy: JSON.stringify(policy)
                 })
             );
             this.logger.debug(
-                `Bucket '${this.configService.get('S3_BUCKET')}' is now public.`
+                `Bucket '${this.bucket}' public prefix is now readable.`
             );
         } catch (err) {
             this.logger.error('Error setting bucket policy:', err);
@@ -83,20 +88,30 @@ export class S3Service implements OnModuleInit {
     async onModuleInit() {
         this.s3 = new S3Client({
             region: 'us-east-1',
-            endpoint: this.configService.get('S3_URL'),
+            endpoint: this.configService.getOrThrow<string>('S3_URL'),
             credentials: {
-                accessKeyId: this.configService.get('S3_ACCESS_KEY'),
-                secretAccessKey: this.configService.get('S3_SECRET_KEY')
+                accessKeyId:
+                    this.configService.getOrThrow<string>('S3_ACCESS_KEY'),
+                secretAccessKey:
+                    this.configService.getOrThrow<string>('S3_SECRET_KEY')
             },
             forcePathStyle: true
         });
         await this.createBucketIfNotExists();
-        await this.makeBucketPublic();
+        await this.makePublicPrefixReadable();
+    }
+
+    getPublicUrl(key: string) {
+        if (!key.startsWith(`${FileVisibility.PUBLIC}/`)) {
+            throw new InternalServerErrorException('File is not public');
+        }
+
+        return `${this.configService.getOrThrow<string>('S3_PUBLIC_URL')}/${this.bucket}/${key}`;
     }
 
     async getSignedReadUrl(key: string, expiresInSeconds = 60 * 10) {
         const command = new GetObjectCommand({
-            Bucket: this.configService.get('S3_BUCKET'),
+            Bucket: this.bucket,
             Key: key
         });
 
@@ -105,31 +120,27 @@ export class S3Service implements OnModuleInit {
         });
     }
 
-    getPublicUrl(key: string) {
-        return `${this.configService.get('S3_PUBLIC_URL')}/${this.configService.get('S3_BUCKET')}/${key}`;
-    }
-
-    async uploadFile(body: Buffer, contentType: string) {
+    async uploadFile(
+        body: Buffer,
+        contentType: string,
+        visibility = FileVisibility.PRIVATE,
+        extension = 'bin'
+    ) {
         try {
-            // TODO: довести до ума (для image/svg+xml получится странное расширение)
-            const ext = contentType.split('/')[1];
-            const key = `${randomUUID()}.${ext}`;
+            const key = `${visibility}/${randomUUID()}.${extension}`;
 
             await this.s3.send(
                 new PutObjectCommand({
-                    Bucket: this.configService.get('S3_BUCKET'),
+                    Bucket: this.bucket,
                     Key: key,
                     Body: body,
                     ContentType: contentType
                 })
             );
 
-            // возможно не стоит давать публичный url и логировать после загрузки чувствительного файла
-            const url = this.getPublicUrl(key);
+            this.logger.debug(`File uploaded: ${key}`);
 
-            this.logger.debug(`File uploaded.: ${url}`);
-
-            return { key, url };
+            return { key };
         } catch (err) {
             this.logger.error('Error uploading file:', err);
             throw new InternalServerErrorException('Failed to upload file');
@@ -140,7 +151,7 @@ export class S3Service implements OnModuleInit {
         try {
             await this.s3.send(
                 new DeleteObjectCommand({
-                    Bucket: this.configService.get('S3_BUCKET'),
+                    Bucket: this.bucket,
                     Key: key
                 })
             );

@@ -1,10 +1,12 @@
 import { File, Prisma } from '@prisma-client';
+import { extension } from 'mime-types';
+import { extname } from 'path';
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '@prisma/prisma.service';
 
-import { S3Service } from '@s3/s3.service';
+import { FileVisibility, S3Service } from '@s3/s3.service';
 
 @Injectable()
 export class FileService {
@@ -13,7 +15,7 @@ export class FileService {
         private readonly s3Service: S3Service
     ) {}
 
-    createDto(file: File) {
+    createPublicDto(file: File) {
         if (!file) return null;
 
         return {
@@ -27,7 +29,7 @@ export class FileService {
         };
     }
 
-    async createSignedDto(file: File, expiresInSeconds = 60 * 10) {
+    async createPrivateDto(file: File, expiresInSeconds = 60 * 10) {
         if (!file) return null;
 
         return {
@@ -42,6 +44,28 @@ export class FileService {
             size: file.size,
             createdAt: file.createdAt
         };
+    }
+
+    private async createUploadDto(file: File) {
+        if (file.storageKey.startsWith(`${FileVisibility.PUBLIC}/`)) {
+            return this.createPublicDto(file);
+        }
+
+        return await this.createPrivateDto(file);
+    }
+
+    private getFileExtension(file: Express.Multer.File) {
+        const mimeExtension = extension(file.mimetype);
+
+        if (mimeExtension) {
+            return mimeExtension;
+        }
+
+        const originalExtension = extname(file.originalname)
+            .replace('.', '')
+            .toLowerCase();
+
+        return originalExtension || 'bin';
     }
 
     // async save(userId: number, files: CreateFileDto[]) {
@@ -59,12 +83,18 @@ export class FileService {
     //     return { files: data.map(file => this.createDto(file)) };
     // }
 
-    async save(userId: number, files: Express.Multer.File[]) {
+    async save(
+        userId: number,
+        files: Express.Multer.File[],
+        visibility = FileVisibility.PUBLIC
+    ) {
         const uploadedFiles = await Promise.all(
             files.map(async file => {
                 const uploaded = await this.s3Service.uploadFile(
                     file.buffer,
-                    file.mimetype
+                    file.mimetype,
+                    visibility,
+                    this.getFileExtension(file)
                 );
 
                 return {
@@ -88,7 +118,11 @@ export class FileService {
                 )
             );
 
-            return { files: data.map(file => this.createDto(file)) };
+            return {
+                files: await Promise.all(
+                    data.map(file => this.createUploadDto(file))
+                )
+            };
         } catch (err) {
             await Promise.allSettled(
                 uploadedFiles.map(file =>

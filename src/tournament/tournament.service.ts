@@ -69,8 +69,8 @@ export class TournamentService {
         return {
             ...tournament,
             creator: this.userService.createDto(tournament.creator),
-            logo: this.fileService.createDto(tournament.logo),
-            banner: this.fileService.createDto(tournament.banner),
+            logo: this.fileService.createPublicDto(tournament.logo),
+            banner: this.fileService.createPublicDto(tournament.banner),
             status: this.getTournamentStatus(
                 tournament.startDate,
                 tournament.endDate
