@@ -18,6 +18,7 @@
         "strictBindCallApply": false,
         "forceConsistentCasingInFileNames": false,
         "noFallthroughCasesInSwitch": false,
+        "resolveJsonModule": true,
         "paths": {
             "@prisma-client": ["generated/prisma/client"],
             "@prisma": ["src/prisma"],
@@ -56,6 +57,7 @@
             "@tournament/*": ["src/tournament/*"],
             "@s3": ["src/s3"],
             "@s3/*": ["src/s3/*"]
-        }
+        },
+        "types": ["jest"]
     }
 }
