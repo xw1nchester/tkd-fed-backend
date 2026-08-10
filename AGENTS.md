@@ -48,7 +48,8 @@ Application imports Prisma types/client via `@prisma-client`, which maps to `gen
 Prisma is configured with `prisma.config.ts` using `schema: "prisma"`; root `prisma/schema.prisma` defines datasource/generator and models are split under `prisma/models/*.prisma`.
 The Prisma Client generator outputs to `generated/prisma`; never edit generated client files manually.
 Migrations live in `prisma/migrations`.
-If you change Prisma schema files, create/update the matching migration and run `npx prisma generate` afterward.
+Do not create or update Prisma migrations unless the user explicitly asks for migrations.
+If you change Prisma schema files, run `npx prisma generate` afterward; create/update the matching migration only when the user explicitly asks for it.
 Use `$transaction([queryA, queryB])` for related read/count pagination when matching existing code.
 Use `$transaction(async tx => { ... })` for multi-step mutations that must commit together; pass `tx` to helper methods that accept `Prisma.TransactionClient`, such as `FileService.delete`.
 Seed data is in `prisma/seed.ts` and is run with `npm run seed`; it currently imports the generated client by relative path.

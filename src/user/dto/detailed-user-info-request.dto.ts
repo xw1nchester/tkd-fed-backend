@@ -29,12 +29,6 @@ export class DetailedUserInfoRequestDto {
     @IsNumber()
     @Transform(({ value }) => Number(value))
     @IsOptional()
-    beltId: number;
-
-    @ApiProperty({ example: 1 })
-    @IsNumber()
-    @Transform(({ value }) => Number(value))
-    @IsOptional()
     sportRankId: number;
 
     @ApiProperty({ type: [DocumentRequestDto] })

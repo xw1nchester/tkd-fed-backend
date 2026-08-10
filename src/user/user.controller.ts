@@ -6,6 +6,7 @@ import {
     Param,
     ParseIntPipe,
     Patch,
+    Post,
     Query,
     UseGuards
 } from '@nestjs/common';
@@ -25,6 +26,11 @@ import { RoleEnum } from '@shared/enums/role.enum';
 import { AvatarRequestDto } from './dto/avatar-request.dto';
 import { BasicUserEditRequestDto } from './dto/basic-user-edit-request.dto';
 import { DetailedUserInfoRequestDto } from './dto/detailed-user-info-request.dto';
+import { DocumentTemplateRequestDto } from './dto/document-template-request.dto';
+import {
+    DocumentTemplatesWrapperResponseDto,
+    DocumentTemplateWrapperResponseDto
+} from './dto/document-template-response.dto';
 import { InvitedUserQueryDto } from './dto/invited-user-query.dto';
 import { UserDetailedWrapperResponseDto } from './dto/user-detailed-response.dto';
 import { UserQueryDto } from './dto/user-query.dto';
@@ -61,6 +67,42 @@ export class UserController {
         @Body() dto: DetailedUserInfoRequestDto
     ) {
         return await this.userService.updateDetailedUserInfo(user.id, dto);
+    }
+
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER)
+    @Post('document-template')
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: DocumentTemplateWrapperResponseDto })
+    async createDocumentTemplate(
+        @CurrentUser() user: JwtPayload,
+        @Body() dto: DocumentTemplateRequestDto
+    ) {
+        return await this.userService.createDocumentTemplate(
+            user.id,
+            dto.fileId
+        );
+    }
+
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER)
+    @Get('document-template')
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: DocumentTemplatesWrapperResponseDto })
+    async getDocumentTemplates(@CurrentUser() user: JwtPayload) {
+        return await this.userService.getDocumentTemplates(user.id);
+    }
+
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER)
+    @Delete('document-template/:id')
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: DocumentTemplateWrapperResponseDto })
+    async deleteDocumentTemplate(
+        @CurrentUser() user: JwtPayload,
+        @Param('id', ParseIntPipe) id: number
+    ) {
+        return await this.userService.deleteDocumentTemplate(user.id, id);
     }
 
     @Public()

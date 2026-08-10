@@ -1,6 +1,7 @@
 import {
     Belt,
     Document,
+    DocumentTemplate,
     DocumentVerification,
     File,
     Prisma,
@@ -24,6 +25,7 @@ import { AdminDetailedUserInfoRequestDto } from '@admin/user/dto/admin-detailed-
 import { AdminUserQueryDto } from '@admin/user/dto/admin-user-query.dto';
 import { UserEditRequestDto } from '@admin/user/dto/user-edit-request.dto';
 import { RegisterRequestDto } from '@auth/dto/register-request.dto';
+import { JwtPayload } from '@auth/interfaces';
 import { BeltService } from '@belt/belt.service';
 import { FileService } from '@file/file.service';
 import { PrismaService } from '@prisma/prisma.service';
@@ -34,7 +36,6 @@ import { OrderOption, SortOption } from '@user/dto/user-query.dto';
 
 import { BasicUserEditRequestDto } from '../dto/basic-user-edit-request.dto';
 import { DetailedUserInfoRequestDto } from '../dto/detailed-user-info-request.dto';
-import { JwtPayload } from '@auth/interfaces';
 
 @Injectable()
 export class UserService {
@@ -144,6 +145,86 @@ export class UserService {
     async getDtoById(id: number) {
         const user = await this.getById(id);
         return { user: this.createDto(user) };
+    }
+
+    async createDocumentTemplateDto(
+        documentTemplate: DocumentTemplate & { file: File }
+    ) {
+        return {
+            id: documentTemplate.id,
+            createdAt: documentTemplate.createdAt,
+            file: await this.fileService.createPrivateDto(
+                documentTemplate.file
+            )
+        };
+    }
+
+    async createDocumentTemplate(userId: number, fileId: number) {
+        const fileExists = await this.fileService.exists(fileId, userId);
+
+        if (!fileExists) {
+            throw new NotFoundException('Файл не найден');
+        }
+
+        const documentTemplate =
+            await this.prismaService.documentTemplate.create({
+                data: {
+                    userId,
+                    fileId
+                },
+                include: {
+                    file: true
+                }
+            });
+
+        return {
+            documentTemplate:
+                await this.createDocumentTemplateDto(documentTemplate)
+        };
+    }
+
+    async getDocumentTemplates(userId: number) {
+        const documentTemplates =
+            await this.prismaService.documentTemplate.findMany({
+                where: { userId },
+                include: {
+                    file: true
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+
+        return {
+            documentTemplates: await Promise.all(
+                documentTemplates.map(documentTemplate =>
+                    this.createDocumentTemplateDto(documentTemplate)
+                )
+            )
+        };
+    }
+
+    async deleteDocumentTemplate(userId: number, id: number) {
+        const documentTemplate =
+            await this.prismaService.documentTemplate.findFirst({
+                where: {
+                    id,
+                    userId
+                },
+                include: {
+                    file: true
+                }
+            });
+
+        if (!documentTemplate) {
+            throw new NotFoundException('Document template not found');
+        }
+
+        const dto = await this.createDocumentTemplateDto(documentTemplate);
+
+        await this.fileService.delete(documentTemplate.fileId);
+
+        return { documentTemplate: dto };
     }
 
     async updateAvatar(id: number, fileId: number) {
@@ -298,12 +379,10 @@ export class UserService {
         includeTeams?: boolean;
         includeBelt?: boolean;
     }) {
-        let {
+        const {
             page,
             limit,
             search,
-            sortBy,
-            order,
             teamId,
             roleId,
             excludedTeamId,
@@ -311,6 +390,7 @@ export class UserService {
             minAge,
             maxAge
         } = query;
+        let { sortBy, order } = query;
         const skip = (page - 1) * limit;
 
         const where: Prisma.UserWhereInput = {
@@ -495,7 +575,6 @@ export class UserService {
     async updateDetailedUserInfo(
         id: number,
         {
-            beltId,
             sportRankId,
             documents,
             status,
@@ -503,12 +582,6 @@ export class UserService {
             reverificationAt
         }: Partial<AdminDetailedUserInfoRequestDto>
     ) {
-        const beltExists = await this.beltService.exists(beltId);
-
-        if (!beltExists) {
-            throw new NotFoundException('Пояс не найден');
-        }
-
         const sportRankExists = await this.sportRankService.exists(sportRankId);
 
         if (!sportRankExists) {
@@ -538,7 +611,6 @@ export class UserService {
             await tx.user.update({
                 where: { id },
                 data: {
-                    beltId,
                     sportRankId,
                     documents: {
                         deleteMany: {},

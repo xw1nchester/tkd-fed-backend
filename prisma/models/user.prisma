@@ -33,6 +33,7 @@ model User {
     sportRankId                     Int?                       @map("sport_rank_id")
     sportRank                       SportRank?                 @relation(fields: [sportRankId], references: [id])
     documents                       Document[]
+    documentTemplates               DocumentTemplate[]
     files                           File[]                     @relation("UserFiles")
     documentVerification            DocumentVerification?
     ratingTransactions              RatingTransaction[]        @relation("UserRating")
