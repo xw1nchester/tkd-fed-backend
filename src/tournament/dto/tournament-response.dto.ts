@@ -1,3 +1,4 @@
+import { TournamentFileType } from '@prisma-client';
 import { IsEnum } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -6,6 +7,23 @@ import { FileDto } from '@file/dto/file-response.dto';
 
 import { TournamentStatus } from '../enums/tournament-status.enum';
 import { UserResponseDto } from '@user/dto/user-response.dto';
+
+class TournamentFileDto {
+    @ApiProperty({ example: 1 })
+    id: number;
+
+    @ApiProperty({
+        enum: TournamentFileType,
+        example: TournamentFileType.REGULATION
+    })
+    type: TournamentFileType;
+
+    @ApiProperty()
+    createdAt: Date;
+
+    @ApiProperty({ type: FileDto })
+    file: FileDto;
+}
 
 export class TournamentResponseDto {
     @ApiProperty({ example: 1 })
@@ -58,6 +76,9 @@ export class TournamentResponseDto {
 
     @ApiPropertyOptional({ nullable: true })
     description: string | null;
+
+    @ApiProperty({ type: [TournamentFileDto] })
+    files: TournamentFileDto[];
 
     @ApiProperty()
     createdAt: Date;

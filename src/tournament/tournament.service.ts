@@ -3,6 +3,7 @@ import {
     Prisma,
     Role,
     Tournament,
+    TournamentFile,
     TournamentRequest,
     TournamentRequestAthlete,
     User
@@ -60,6 +61,7 @@ export class TournamentService {
             creator: User & { roles: Role[]; avatar: File };
             logo?: File;
             banner?: File;
+            files?: (TournamentFile & { file: File })[];
         }
     ) {
         delete tournament.creatorId;
@@ -71,6 +73,16 @@ export class TournamentService {
             creator: this.userService.createDto(tournament.creator),
             logo: this.fileService.createPublicDto(tournament.logo),
             banner: this.fileService.createPublicDto(tournament.banner),
+            ...(tournament?.files && {
+                files: tournament.files.map(
+                    ({ id, type, createdAt, file }) => ({
+                        id,
+                        type,
+                        createdAt,
+                        file: this.fileService.createPublicDto(file)
+                    })
+                )
+            }),
             status: this.getTournamentStatus(
                 tournament.startDate,
                 tournament.endDate
@@ -84,6 +96,11 @@ export class TournamentService {
             include: {
                 logo: true,
                 banner: true,
+                files: {
+                    include: {
+                        file: true
+                    }
+                },
                 creator: { include: { avatar: true, roles: true } }
             }
         });
@@ -109,6 +126,11 @@ export class TournamentService {
             include: {
                 logo: true,
                 banner: true,
+                files: {
+                    include: {
+                        file: true
+                    }
+                },
                 creator: { include: { avatar: true, roles: true } }
             }
         });
@@ -131,15 +153,32 @@ export class TournamentService {
     async create(dto: TournamentRequestDto, creatorId: number) {
         const startDate = new Date(dto.startDate);
         const endDate = new Date(dto.endDate);
+        const { files, ...tournamentData } = dto;
 
         this.validateDates(startDate, endDate);
         await this.validateTournamentFiles(dto);
 
         const tournament = await this.prismaService.tournament.create({
-            data: { ...dto, startDate, endDate, creatorId },
+            data: {
+                ...tournamentData,
+                startDate,
+                endDate,
+                creatorId,
+                files: {
+                    create: files.map(({ type, fileId }) => ({
+                        type,
+                        fileId
+                    }))
+                }
+            },
             include: {
                 logo: true,
                 banner: true,
+                files: {
+                    include: {
+                        file: true
+                    }
+                },
                 creator: { include: { avatar: true, roles: true } }
             }
         });
@@ -230,9 +269,11 @@ export class TournamentService {
     }
 
     private async validateTournamentFiles(dto: TournamentRequestDto) {
-        const fileIds = [dto.logoId, dto.bannerId].filter(
-            (id): id is number => id !== undefined && id !== null
-        );
+        const fileIds = [
+            dto.logoId,
+            dto.bannerId,
+            ...dto.files.map(file => file.fileId)
+        ].filter((id): id is number => id !== undefined && id !== null);
 
         if (!fileIds.length) {
             return;
@@ -284,20 +325,42 @@ export class TournamentService {
 
         const startDate = new Date(dto.startDate);
         const endDate = new Date(dto.endDate);
+        const { files, ...tournamentData } = dto;
 
         this.validateDates(startDate, endDate);
         await this.validateTournamentFiles(dto);
 
+        const retainedFileIds = new Set(
+            [
+                dto.logoId,
+                dto.bannerId,
+                ...(files ?? existingTournament.files).map(file => file.fileId)
+            ].filter((fileId): fileId is number => !!fileId)
+        );
+
         await this.prismaService.$transaction(async tx => {
             await tx.tournament.update({
                 where: { id },
-                data: { ...dto, startDate, endDate }
+                data: {
+                    ...tournamentData,
+                    startDate,
+                    endDate,
+                    ...(files !== undefined && {
+                        files: {
+                            deleteMany: {},
+                            create: files.map(({ type, fileId }) => ({
+                                type,
+                                fileId
+                            }))
+                        }
+                    })
+                }
             });
 
             if (
                 existingTournament.logoId &&
                 existingTournament.logoId != dto.logoId &&
-                existingTournament.logoId != dto.bannerId
+                !retainedFileIds.has(existingTournament.logoId)
             ) {
                 await this.fileService.delete(existingTournament.logoId, tx);
             }
@@ -305,7 +368,7 @@ export class TournamentService {
             if (
                 existingTournament.bannerId &&
                 existingTournament.bannerId != dto.bannerId &&
-                existingTournament.bannerId != dto.logoId
+                !retainedFileIds.has(existingTournament.bannerId)
             ) {
                 await this.fileService.delete(existingTournament.bannerId, tx);
             }
@@ -321,10 +384,10 @@ export class TournamentService {
         await this.prismaService.$transaction(async tx => {
             await tx.tournament.delete({ where: { id } });
 
-            for (const fileId of [
+            for (const fileId of new Set([
                 existingTournament.logoId,
                 existingTournament.bannerId
-            ]) {
+            ])) {
                 if (fileId) await this.fileService.delete(fileId, tx);
             }
         });

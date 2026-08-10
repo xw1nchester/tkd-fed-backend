@@ -34,6 +34,7 @@ import { OrderOption, SortOption } from '@user/dto/user-query.dto';
 
 import { BasicUserEditRequestDto } from '../dto/basic-user-edit-request.dto';
 import { DetailedUserInfoRequestDto } from '../dto/detailed-user-info-request.dto';
+import { JwtPayload } from '@auth/interfaces';
 
 @Injectable()
 export class UserService {
@@ -480,11 +481,11 @@ export class UserService {
         return { user: await this.createUserDetailedDto(data) };
     }
 
-    async getDetailedUserInfoByTrainer(userId: number, trainerId: number) {
+    async getDetailedUserInfoByTrainer(userId: number, actor: JwtPayload) {
         // TODO: предусмотреть чтобы редактировать пользователя мог любой его родитель
         const { invitedById } = await this.getById(userId);
 
-        if (trainerId != invitedById) {
+        if (actor.id != invitedById && !actor.roles.includes(RoleEnum.ADMIN)) {
             throw new ForbiddenException();
         }
 

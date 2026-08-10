@@ -1,15 +1,33 @@
 import { Transform, Type } from 'class-transformer';
 import {
+    IsArray,
     IsBoolean,
     IsDateString,
+    IsEnum,
     IsInt,
     IsNotEmpty,
     IsOptional,
     IsString,
-    Min
+    Min,
+    ValidateNested
 } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TournamentFileType } from '@prisma-client';
+
+class TournamentFileRequestDto {
+    @ApiProperty({
+        enum: TournamentFileType,
+        example: TournamentFileType.REGULATION
+    })
+    @IsEnum(TournamentFileType)
+    type: TournamentFileType;
+
+    @ApiProperty({ example: 1 })
+    @IsInt()
+    @Transform(({ value }) => Number(value))
+    fileId: number;
+}
 
 export class TournamentRequestDto {
     @ApiProperty({ example: 'Открытый кубок города' })
@@ -82,6 +100,12 @@ export class TournamentRequestDto {
     @IsOptional()
     @IsString()
     description?: string;
+
+    @ApiProperty({ type: [TournamentFileRequestDto] })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => TournamentFileRequestDto)
+    files: TournamentFileRequestDto[];
 
     @ApiProperty({ example: true })
     @IsBoolean()

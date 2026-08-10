@@ -163,7 +163,7 @@ export class UserController {
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: JwtPayload
     ) {
-        return await this.userService.getDetailedUserInfoByTrainer(id, user.id);
+        return await this.userService.getDetailedUserInfoByTrainer(id, user);
     }
 
     @UseGuards(RoleGuard)

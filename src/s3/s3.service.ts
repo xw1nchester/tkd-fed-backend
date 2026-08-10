@@ -25,6 +25,7 @@ export enum FileVisibility {
 export class S3Service implements OnModuleInit {
     private logger = new Logger(S3Service.name);
     private s3: S3Client;
+    private publicS3: S3Client;
 
     constructor(private configService: ConfigService) {}
 
@@ -86,17 +87,25 @@ export class S3Service implements OnModuleInit {
     }
 
     async onModuleInit() {
+        const credentials = {
+            accessKeyId: this.configService.getOrThrow<string>('S3_ACCESS_KEY'),
+            secretAccessKey: this.configService.getOrThrow<string>('S3_SECRET_KEY')
+        };
+
         this.s3 = new S3Client({
             region: 'us-east-1',
             endpoint: this.configService.getOrThrow<string>('S3_URL'),
-            credentials: {
-                accessKeyId:
-                    this.configService.getOrThrow<string>('S3_ACCESS_KEY'),
-                secretAccessKey:
-                    this.configService.getOrThrow<string>('S3_SECRET_KEY')
-            },
+            credentials,
             forcePathStyle: true
         });
+
+        this.publicS3 = new S3Client({
+            region: 'us-east-1',
+            endpoint: this.configService.getOrThrow<string>('S3_PUBLIC_URL'),
+            credentials,
+            forcePathStyle: true
+        });
+
         await this.createBucketIfNotExists();
         await this.makePublicPrefixReadable();
     }
@@ -115,7 +124,7 @@ export class S3Service implements OnModuleInit {
             Key: key
         });
 
-        return getSignedUrl(this.s3, command, {
+        return getSignedUrl(this.publicS3, command, {
             expiresIn: expiresInSeconds
         });
     }

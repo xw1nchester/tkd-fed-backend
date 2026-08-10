@@ -5,11 +5,6 @@ export class FileDto {
     id: number;
 
     @ApiProperty({
-        example: '64c43ba9-b062-4875-a989-291948999b4e.jpeg'
-    })
-    key: string;
-
-    @ApiProperty({
         example:
             'http://localhost:8080/static/64c43ba9-b062-4875-a989-291948999b4e.jpeg'
     })
@@ -29,6 +24,9 @@ export class FileDto {
         example: 245760
     })
     size: number;
+
+    @ApiProperty()
+    createdAt: Date;
 }
 
 export class FilesResponseDto {

@@ -8,6 +8,7 @@ model File {
     size              Int          @default(0)
     createdAt         DateTime     @default(now()) @map("created_at")
     documents         Document[]
+    tournamentFiles   TournamentFile[]
     avatars           User[]       @relation("UserAvatar")
     tournamentLogos   Tournament[] @relation("TournamentLogo")
     tournamentBanners Tournament[] @relation("TournamentBanner")

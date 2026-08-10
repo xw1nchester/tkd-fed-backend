@@ -1,3 +1,8 @@
+enum TournamentFileType {
+    REGULATION
+    OTHER
+}
+
 model Tournament {
     id                    Int                 @id @default(autoincrement())
     name                  String
@@ -22,8 +27,21 @@ model Tournament {
     createdAt             DateTime            @default(now()) @map("created_at")
     updatedAt             DateTime            @updatedAt @map("updated_at")
     tournamentRequests    TournamentRequest[]
+    files                 TournamentFile[]
 
     @@map("tournaments")
+}
+
+model TournamentFile {
+    id           Int                @id @default(autoincrement())
+    tournamentId Int                @map("tournament_id")
+    tournament   Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+    type         TournamentFileType
+    fileId       Int                @map("file_id")
+    file         File               @relation(fields: [fileId], references: [id], onDelete: Cascade)
+    createdAt    DateTime           @default(now()) @map("created_at")
+
+    @@map("tournament_files")
 }
 
 model TournamentRequest {

@@ -14,6 +14,7 @@ Path aliases are configured in `tsconfig.json`; prefer existing aliases such as 
 
 # Development Commands
 Install dependencies: `npm install`.
+Use `npm` only when running package-manager commands; do not use `yarn` or `pnpm`.
 Start/build scripts: `npm run start`, `npm run start:dev`, `npm run start:debug`, `npm run start:prod`, `npm run build`.
 Format: `npm run format` writes Prettier changes to `src/**/*.ts` and `test/**/*.ts`.
 Lint: `npm run lint` runs ESLint with `--fix`; expect it to modify files and check the working tree afterward.
@@ -76,7 +77,8 @@ MinIO is defined in `docker-compose.yml` and persists data under `./minio_data`.
 Jest unit tests are configured in `package.json` with `rootDir: "src"` and `*.spec.ts`, but no current `src/**/*.spec.ts` files were found.
 E2E tests live under `test` and use `test/jest-e2e.json`.
 The current scaffold e2e test targets `GET /` and `Hello World!`, while the actual app exposes `GET /api/health`; treat e2e coverage as stale until updated.
-Run the narrowest useful checks for your change, then prefer `npm run build` and relevant Jest commands before handoff.
+Run the narrowest useful checks for your change and relevant Jest commands before handoff.
+Do not run the application build or `prisma validate` after changes unless the user explicitly asks for those checks.
 Remember that `npm run lint` and `npm run format` intentionally rewrite files.
 
 # What Not To Touch Without An Explicit Task
@@ -93,4 +95,5 @@ Check `git diff` and ensure you did not rewrite unrelated files, especially afte
 For API changes, verify DTO validation, Swagger decorators, auth/public/role behavior, and response wrapper shape.
 For Prisma changes, verify schema, migration, generated client, and any seed implications.
 For file/S3 changes, verify partial-failure cleanup and avoid leaking uploaded objects when DB work fails.
-Run `npm run build` and the relevant tests when feasible; explicitly report any check you could not run.
+Run the relevant tests when feasible; explicitly report any check you could not run.
+Do not run `npm run build` or `prisma validate` unless the user explicitly asks for them.

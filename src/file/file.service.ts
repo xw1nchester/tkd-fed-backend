@@ -20,7 +20,6 @@ export class FileService {
 
         return {
             id: file.id,
-            key: file.storageKey,
             url: this.s3Service.getPublicUrl(file.storageKey),
             type: file.mimeType,
             filename: file.filename,
@@ -34,7 +33,6 @@ export class FileService {
 
         return {
             id: file.id,
-            key: file.storageKey,
             url: await this.s3Service.getSignedReadUrl(
                 file.storageKey,
                 expiresInSeconds
