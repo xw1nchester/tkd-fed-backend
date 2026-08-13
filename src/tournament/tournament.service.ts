@@ -1,12 +1,15 @@
 import {
+    AgeCategory,
     File,
+    Gender,
     Prisma,
     Role,
     Tournament,
     TournamentFile,
     TournamentRequest,
     TournamentRequestAthlete,
-    User
+    User,
+    WeightCategory
 } from '@prisma-client';
 
 import {
@@ -24,11 +27,15 @@ import { RoleEnum } from '@shared/enums/role.enum';
 import { UserService } from '@user/services/user.service';
 import { WeightCategoryService } from '@weight-category/weight-category.service';
 
+import { TournamentApplicationQueryDto } from './dto/tournament-application-query.dto';
 import { TournamentApplicationRequestDto } from './dto/tournament-application-request.dto';
 import { TournamentQueryDto } from './dto/tournament-query.dto';
 import { TournamentRequestDto } from './dto/tournament-request.dto';
 import { TournamentStatus } from './enums/tournament-status.enum';
-import { TournamentApplicationQueryDto } from './dto/tournament-application-query.dto';
+import {
+    buildTournamentRequestXlsx,
+    TournamentRequestXlsxAthlete
+} from './tournament-request-xlsx.builder';
 
 @Injectable()
 export class TournamentService {
@@ -669,6 +676,128 @@ export class TournamentService {
             page,
             limit
         );
+    }
+
+    async generateRequestXlsx(id: number, requesterUser: JwtPayload) {
+        const request = await this.prismaService.tournamentRequest.findFirst({
+            where: { id, ...this.getRequestAccessWhere(requesterUser) },
+            // where: { id },
+            include: {
+                tournament: true,
+                athletes: {
+                    include: {
+                        athlete: {
+                            include: {
+                                belt: true,
+                                sportRank: true
+                            }
+                        },
+                        weightCategory: {
+                            include: {
+                                ageCategory: true
+                            }
+                        }
+                    },
+                    orderBy: { id: 'asc' }
+                }
+            }
+        });
+
+        if (!request) {
+            throw new NotFoundException('Заявка на турнир не найдена');
+        }
+
+        const athletes: TournamentRequestXlsxAthlete[] =
+            request.athletes.map(({ athlete, weightCategory }) => ({
+                gender: this.formatGender(athlete.gender),
+                fullName: this.formatUserFullName(athlete),
+                birthDate: athlete.birthDate,
+                weightCategory: this.formatWeightCategory(weightCategory),
+                ageCategory: this.formatAgeCategory(
+                    weightCategory.ageCategory,
+                    request.tournament.startDate
+                ),
+                sportRank: athlete.sportRank?.name ?? '',
+                belt: athlete.belt?.name ?? '',
+                city: 'Тюмень',
+                federalDistrict: 'УрФО',
+                department: 'МинОбр',
+                organization: request.organization,
+                firstTrainer: athlete.firstTrainer ?? ''
+            }));
+
+        const buffer = await buildTournamentRequestXlsx({
+            tournamentName: request.tournament.name,
+            tournamentCity: request.tournament.city,
+            startDate: request.tournament.startDate,
+            endDate: request.tournament.endDate,
+            representativeName: 'Нестеренков Д.А.',
+            athletes
+        });
+
+        return {
+            buffer,
+            filename: this.createXlsxFilename(request.organization)
+        };
+    }
+
+    private createXlsxFilename(organization: string): string {
+        const safeOrganization = organization
+            .replace(/[<>:"/\\|?*]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        return `${safeOrganization || 'tournament-request'}.xlsx`;
+    }
+
+    private formatGender(gender: Gender): string {
+        return gender === Gender.FEMALE ? 'д' : 'м';
+    }
+
+    private formatUserFullName(
+        user: Pick<User, 'lastName' | 'firstName' | 'middleName'>
+    ): string {
+        return [user.lastName, user.firstName, user.middleName]
+            .filter(Boolean)
+            .join(' ');
+    }
+
+    private formatWeightCategory(
+        category: Pick<WeightCategory, 'minWeight' | 'maxWeight'>
+    ): string {
+        if (category.minWeight !== null && category.maxWeight !== null) {
+            return `${category.minWeight}-${category.maxWeight}`;
+        }
+
+        if (category.maxWeight !== null) {
+            return `${category.maxWeight}`;
+        }
+
+        if (category.minWeight !== null) {
+            return `${category.minWeight}+`;
+        }
+
+        return '';
+    }
+
+    private formatAgeCategory(
+        category: Pick<AgeCategory, 'name' | 'minAge' | 'maxAge'>,
+        tournamentStartDate: Date
+    ): string {
+        const tournamentYear = tournamentStartDate.getFullYear();
+        const youngestBirthYear = tournamentYear - category.minAge;
+
+        if (category.maxAge === null) {
+            return `${category.name} ${youngestBirthYear} г.р. и старше`;
+        }
+
+        const oldestBirthYear = tournamentYear - category.maxAge;
+
+        if (oldestBirthYear === youngestBirthYear) {
+            return `${category.name} ${youngestBirthYear} г.р.`;
+        }
+
+        return `${category.name} ${oldestBirthYear} - ${youngestBirthYear} г.р.`;
     }
 
     async updateRequest(

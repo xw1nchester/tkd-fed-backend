@@ -1,3 +1,5 @@
+import { Response } from 'express';
+
 import {
     Body,
     Controller,
@@ -8,12 +10,15 @@ import {
     Patch,
     Post,
     Query,
+    Res,
+    StreamableFile,
     UseGuards
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiExtraModels,
     ApiOkResponse,
+    ApiProduces,
     getSchemaPath
 } from '@nestjs/swagger';
 
@@ -25,6 +30,7 @@ import { PaginationQueryDto } from '@shared/dto/pagination-query.dto';
 import { PaginationResponseDto } from '@shared/dto/pagination-response.dto';
 import { RoleEnum } from '@shared/enums/role.enum';
 
+import { TournamentApplicationQueryDto } from './dto/tournament-application-query.dto';
 import { TournamentApplicationRequestDto } from './dto/tournament-application-request.dto';
 import { TournamentQueryDto } from './dto/tournament-query.dto';
 import {
@@ -38,7 +44,6 @@ import {
     TournamentWrapperResponseDto
 } from './dto/tournament-response.dto';
 import { TournamentService } from './tournament.service';
-import { TournamentApplicationQueryDto } from './dto/tournament-application-query.dto';
 
 @Controller('tournament')
 export class TournamentController {
@@ -170,6 +175,47 @@ export class TournamentController {
             dto,
             user
         );
+    }
+
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
+    // @Public()
+    @Get('request/:id/xlsx')
+    @ApiBearerAuth()
+    @ApiProduces(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    @ApiOkResponse({
+        description: 'XLSX файл заявки на турнир',
+        content: {
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                {
+                    schema: {
+                        type: 'string',
+                        format: 'binary'
+                    }
+                }
+        }
+    })
+    async generateRequestXlsx(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: JwtPayload,
+        @Res({ passthrough: true }) res: Response
+    ) {
+        const { buffer, filename } =
+            await this.tournamentService.generateRequestXlsx(id, user);
+
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="request.xlsx"; filename*=UTF-8''${encodeURIComponent(filename)}`
+        );
+        res.setHeader('Content-Length', buffer.length);
+
+        return new StreamableFile(buffer);
     }
 
     @UseGuards(RoleGuard)
