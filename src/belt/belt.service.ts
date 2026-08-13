@@ -7,7 +7,9 @@ export class BeltService {
     constructor(private readonly prismaService: PrismaService) {}
 
     async findAll() {
-        const belts = await this.prismaService.belt.findMany();
+        const belts = await this.prismaService.belt.findMany({
+            orderBy: { sortOrder: 'asc' }
+        });
         return { belts };
     }
 

@@ -384,6 +384,7 @@ export class TournamentService {
         await this.prismaService.$transaction(async tx => {
             await tx.tournament.delete({ where: { id } });
 
+            // TODO: удалять также прикрепленные файлы
             for (const fileId of new Set([
                 existingTournament.logoId,
                 existingTournament.bannerId

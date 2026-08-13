@@ -9,6 +9,7 @@ import {
     UseInterceptors
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import {
     ApiBearerAuth,
     ApiBody,
@@ -24,18 +25,23 @@ import { FilesResponseDto } from './dto/file-response.dto';
 import { FileUploadRequestDto } from './dto/file-upload-request.dto';
 import { FileService } from './file.service';
 
+type FileUploadMulterOptions = MulterOptions & {
+    defParamCharset?: string;
+};
+
+const fileUploadMulterOptions: FileUploadMulterOptions = {
+    storage: memoryStorage(),
+    defParamCharset: 'utf8',
+    limits: {
+        fileSize: 10 * 1024 * 1024
+    }
+};
+
 @Controller('file')
 export class FileController {
     constructor(private readonly fileService: FileService) {}
 
-    @UseInterceptors(
-        FilesInterceptor('files', 10, {
-            storage: memoryStorage(),
-            limits: {
-                fileSize: 10 * 1024 * 1024 // 10 MB на один файл
-            }
-        })
-    )
+    @UseInterceptors(FilesInterceptor('files', 10, fileUploadMulterOptions))
     @Post('upload')
     @ApiBearerAuth()
     @ApiConsumes('multipart/form-data')

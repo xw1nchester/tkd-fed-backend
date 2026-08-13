@@ -120,13 +120,12 @@ async function main() {
             rankNumber: 1,
             sortOrder: 10
         },
-
         {
             id: 11,
-            name: 'Чёрный',
-            color: 'black',
-            stripeColor: null,
-            rankType: BeltRankType.DAN,
+            name: 'Красно-черный',
+            color: 'red',
+            stripeColor: 'black',
+            rankType: BeltRankType.PUM,
             rankNumber: 1,
             sortOrder: 11
         },
@@ -136,7 +135,7 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 2,
+            rankNumber: 1,
             sortOrder: 12
         },
         {
@@ -145,7 +144,7 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 3,
+            rankNumber: 2,
             sortOrder: 13
         },
         {
@@ -154,7 +153,7 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 4,
+            rankNumber: 3,
             sortOrder: 14
         },
         {
@@ -163,7 +162,7 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 5,
+            rankNumber: 4,
             sortOrder: 15
         },
         {
@@ -172,7 +171,7 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 6,
+            rankNumber: 5,
             sortOrder: 16
         },
         {
@@ -181,7 +180,7 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 7,
+            rankNumber: 6,
             sortOrder: 17
         },
         {
@@ -190,7 +189,7 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 8,
+            rankNumber: 7,
             sortOrder: 18
         },
         {
@@ -199,8 +198,17 @@ async function main() {
             color: 'black',
             stripeColor: null,
             rankType: BeltRankType.DAN,
-            rankNumber: 9,
+            rankNumber: 8,
             sortOrder: 19
+        },
+        {
+            id: 20,
+            name: 'Чёрный',
+            color: 'black',
+            stripeColor: null,
+            rankType: BeltRankType.DAN,
+            rankNumber: 9,
+            sortOrder: 20
         }
     ];
 
