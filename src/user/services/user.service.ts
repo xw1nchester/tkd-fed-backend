@@ -50,7 +50,7 @@ export class UserService {
     async getById(id: number) {
         const user = await this.prismaService.user.findFirst({
             where: { id },
-            include: { avatar: true, roles: true }
+            include: { avatar: true, roles: true, belt: true }
         });
 
         if (!user) {
@@ -502,18 +502,15 @@ export class UserService {
     }
 
     async createUserDetailedDto({
-        belt,
         sportRank,
         documents,
         documentVerification
     }: {
-        belt: Belt;
         sportRank: SportRank;
         documents: (Document & { file: File })[];
         documentVerification: DocumentVerification;
     }) {
         return {
-            belt,
             sportRank,
             documents: await Promise.all(
                 documents.map(async ({ id, type, createdAt, file }) => ({
@@ -547,7 +544,6 @@ export class UserService {
         const data = await this.prismaService.user.findFirst({
             where: { id },
             include: {
-                belt: true,
                 sportRank: true,
                 documents: {
                     include: {

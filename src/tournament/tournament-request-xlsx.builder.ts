@@ -20,6 +20,9 @@ export interface TournamentRequestXlsxData {
     tournamentCity: string;
     startDate: Date;
     endDate: Date;
+    approvalOrganizationLine1?: string;
+    approvalOrganizationLine2?: string;
+    approvalPersonName?: string;
     representativeName: string;
     athletes: TournamentRequestXlsxAthlete[];
 }
@@ -90,7 +93,7 @@ export async function buildTournamentRequestXlsx(
         { key: 'doctorVisa', width: 22 }
     ];
 
-    addApprovalBlock(sheet);
+    addApprovalBlock(sheet, data);
     addTitleBlock(sheet, data);
     addTable(sheet, data.athletes);
     addFooter(sheet, data);
@@ -100,12 +103,15 @@ export async function buildTournamentRequestXlsx(
     return Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
 }
 
-function addApprovalBlock(sheet: ExcelJS.Worksheet) {
+function addApprovalBlock(
+    sheet: ExcelJS.Worksheet,
+    data: TournamentRequestXlsxData
+) {
     const values = [
         '"Утверждаю"',
-        'Президент Тюменской Региональной Общественной',
-        'Организации Олимпийского Тхэквондо "Сила Духа"',
-        'Нестеренков Д.А.',
+        data.approvalOrganizationLine1 ?? '',
+        data.approvalOrganizationLine2 ?? '',
+        data.approvalPersonName ?? '',
         '____________________'
     ];
 
@@ -123,7 +129,10 @@ function addApprovalBlock(sheet: ExcelJS.Worksheet) {
     });
 }
 
-function addTitleBlock(sheet: ExcelJS.Worksheet, data: TournamentRequestXlsxData) {
+function addTitleBlock(
+    sheet: ExcelJS.Worksheet,
+    data: TournamentRequestXlsxData
+) {
     sheet.mergeCells('A7:M7');
     sheet.getRow(7).height = 22;
     const titleCell = sheet.getCell('A7');

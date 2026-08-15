@@ -3,7 +3,6 @@ import {
     IsArray,
     IsBoolean,
     IsDateString,
-    IsEnum,
     IsInt,
     IsNotEmpty,
     IsOptional,
@@ -13,15 +12,12 @@ import {
 } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TournamentFileType } from '@prisma-client';
 
 class TournamentFileRequestDto {
-    @ApiProperty({
-        enum: TournamentFileType,
-        example: TournamentFileType.REGULATION
-    })
-    @IsEnum(TournamentFileType)
-    type: TournamentFileType;
+    @ApiPropertyOptional({ example: 'Положение', nullable: true })
+    @IsOptional()
+    @IsString()
+    name: string;
 
     @ApiProperty({ example: 1 })
     @IsInt()

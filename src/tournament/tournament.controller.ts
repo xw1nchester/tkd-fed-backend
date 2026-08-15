@@ -32,12 +32,13 @@ import { RoleEnum } from '@shared/enums/role.enum';
 
 import { TournamentApplicationQueryDto } from './dto/tournament-application-query.dto';
 import { TournamentApplicationRequestDto } from './dto/tournament-application-request.dto';
-import { TournamentQueryDto } from './dto/tournament-query.dto';
 import {
-    TournamentRequestResponseDto,
+    TournamentApplicationResponseDto,
     TournamentRequestWrapperResponseDto,
-    TournamentRequestAthleteResponseDto
-} from './dto/tournament-request-response.dto';
+    TournamentRequestAthleteResponseDto,
+    TournamentRequestXlsxFieldsWrapperResponseDto
+} from './dto/tournament-application-response.dto';
+import { TournamentQueryDto } from './dto/tournament-query.dto';
 import { TournamentRequestDto } from './dto/tournament-request.dto';
 import {
     TournamentResponseDto,
@@ -95,7 +96,7 @@ export class TournamentController {
     @Public()
     @UseGuards(OptionalJwtAuthGuard)
     @Get('request')
-    @ApiExtraModels(PaginationResponseDto, TournamentRequestResponseDto)
+    @ApiExtraModels(PaginationResponseDto, TournamentApplicationResponseDto)
     @ApiOkResponse({
         schema: {
             allOf: [
@@ -105,7 +106,7 @@ export class TournamentController {
                             type: 'array',
                             items: {
                                 $ref: getSchemaPath(
-                                    TournamentRequestResponseDto
+                                    TournamentApplicationResponseDto
                                 )
                             }
                         }
@@ -216,6 +217,17 @@ export class TournamentController {
         res.setHeader('Content-Length', buffer.length);
 
         return new StreamableFile(buffer);
+    }
+
+    @UseGuards(RoleGuard)
+    @Role(RoleEnum.TRAINER, RoleEnum.SECRETARY)
+    @Get('request/latest-xlsx-field')
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: TournamentRequestXlsxFieldsWrapperResponseDto })
+    async getLatestRequestXlsxFieldsByUserId(@CurrentUser() user: JwtPayload) {
+        return this.tournamentService.getLatestRequestXlsxFieldsDtoByUserId(
+            user.id
+        );
     }
 
     @UseGuards(RoleGuard)

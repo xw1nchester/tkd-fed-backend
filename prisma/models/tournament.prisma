@@ -1,8 +1,3 @@
-enum TournamentFileType {
-    REGULATION
-    OTHER
-}
-
 model Tournament {
     id                    Int                 @id @default(autoincrement())
     name                  String
@@ -33,13 +28,13 @@ model Tournament {
 }
 
 model TournamentFile {
-    id           Int                @id @default(autoincrement())
-    tournamentId Int                @map("tournament_id")
-    tournament   Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-    type         TournamentFileType
-    fileId       Int                @map("file_id")
-    file         File               @relation(fields: [fileId], references: [id], onDelete: Cascade)
-    createdAt    DateTime           @default(now()) @map("created_at")
+    id           Int        @id @default(autoincrement())
+    tournamentId Int        @map("tournament_id")
+    tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+    name         String?
+    fileId       Int        @map("file_id")
+    file         File       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+    createdAt    DateTime   @default(now()) @map("created_at")
 
     @@map("tournament_files")
 }
@@ -51,6 +46,13 @@ model TournamentRequest {
     trainerId    Int                        @map("trainer_id")
     trainer      User                       @relation("TrainerTournamentRequests", fields: [trainerId], references: [id])
     organization String
+    approvalOrganizationLine1 String?       @map("approval_organization_line_1")
+    approvalOrganizationLine2 String?       @map("approval_organization_line_2")
+    approvalPersonName        String?       @map("approval_person_name")
+    athleteCity               String?       @map("athlete_city")
+    athleteFederalDistrict    String?       @map("athlete_federal_district")
+    athleteSportsSociety      String?       @map("athlete_sports_society")
+    teamRepresentativeName    String?       @map("team_representative_name")
     isAccepted   Boolean                    @default(false) @map("is_accepted")
     createdAt    DateTime                   @default(now()) @map("created_at")
     updatedAt    DateTime                   @updatedAt @map("updated_at")

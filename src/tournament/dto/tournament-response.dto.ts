@@ -1,4 +1,3 @@
-import { TournamentFileType } from '@prisma-client';
 import { IsEnum } from 'class-validator';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -12,11 +11,8 @@ class TournamentFileDto {
     @ApiProperty({ example: 1 })
     id: number;
 
-    @ApiProperty({
-        enum: TournamentFileType,
-        example: TournamentFileType.REGULATION
-    })
-    type: TournamentFileType;
+    @ApiPropertyOptional({ example: 'Регламент', nullable: true })
+    name: string | null;
 
     @ApiProperty()
     createdAt: Date;

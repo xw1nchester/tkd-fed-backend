@@ -82,9 +82,9 @@ export class TournamentService {
             banner: this.fileService.createPublicDto(tournament.banner),
             ...(tournament?.files && {
                 files: tournament.files.map(
-                    ({ id, type, createdAt, file }) => ({
+                    ({ id, name, createdAt, file }) => ({
                         id,
-                        type,
+                        name,
                         createdAt,
                         file: this.fileService.createPublicDto(file)
                     })
@@ -172,8 +172,8 @@ export class TournamentService {
                 endDate,
                 creatorId,
                 files: {
-                    create: files.map(({ type, fileId }) => ({
-                        type,
+                    create: files.map(({ name, fileId }) => ({
+                        name,
                         fileId
                     }))
                 }
@@ -355,8 +355,8 @@ export class TournamentService {
                     ...(files !== undefined && {
                         files: {
                             deleteMany: {},
-                            create: files.map(({ type, fileId }) => ({
-                                type,
+                            create: files.map(({ name, fileId }) => ({
+                                name,
                                 fileId
                             }))
                         }
@@ -438,6 +438,13 @@ export class TournamentService {
         return {
             id: request.id,
             organization: request.organization,
+            approvalOrganizationLine1: request.approvalOrganizationLine1,
+            approvalOrganizationLine2: request.approvalOrganizationLine2,
+            approvalPersonName: request.approvalPersonName,
+            athleteCity: request.athleteCity,
+            athleteFederalDistrict: request.athleteFederalDistrict,
+            athleteSportsSociety: request.athleteSportsSociety,
+            teamRepresentativeName: request.teamRepresentativeName,
             isAccepted: request.isAccepted,
             trainer: this.userService.createDto(request.trainer),
             athletesCount: request._count.athletes,
@@ -475,6 +482,25 @@ export class TournamentService {
         }
 
         return { tournamentRequest: this.createRequestDto(request) };
+    }
+
+    async getLatestRequestXlsxFieldsDtoByUserId(userId: number) {
+        const request = await this.prismaService.tournamentRequest.findFirst({
+            where: {
+                trainerId: userId
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return {
+            approvalOrganizationLine1: request?.approvalOrganizationLine1 || null,
+            approvalOrganizationLine2: request?.approvalOrganizationLine2 || null,
+            approvalPersonName: request?.approvalPersonName || null,
+            athleteCity: request?.athleteCity || null,
+            athleteFederalDistrict: request?.athleteFederalDistrict || null,
+            athleteSportsSociety: request?.athleteSportsSociety || null,
+            teamRepresentativeName: request?.teamRepresentativeName || null
+        };
     }
 
     private createAthleteDto(
@@ -553,6 +579,7 @@ export class TournamentService {
                 data: {
                     tournamentId,
                     organization: dto.organization,
+                    ...this.getTournamentRequestXlsxData(dto),
                     trainerId: trainer.id,
                     athletes: {
                         create: dto.athletes.map(
@@ -562,7 +589,7 @@ export class TournamentService {
                             })
                         )
                     }
-                }
+                } as any
             });
 
         return this.getRequestDtoById({
@@ -679,6 +706,8 @@ export class TournamentService {
     }
 
     async generateRequestXlsx(id: number, requesterUser: JwtPayload) {
+        void requesterUser;
+
         const request = await this.prismaService.tournamentRequest.findFirst({
             where: { id, ...this.getRequestAccessWhere(requesterUser) },
             // where: { id },
@@ -689,6 +718,7 @@ export class TournamentService {
                         athlete: {
                             include: {
                                 belt: true,
+                                invitedBy: true,
                                 sportRank: true
                             }
                         },
@@ -707,8 +737,10 @@ export class TournamentService {
             throw new NotFoundException('Заявка на турнир не найдена');
         }
 
-        const athletes: TournamentRequestXlsxAthlete[] =
-            request.athletes.map(({ athlete, weightCategory }) => ({
+        const xlsxRequest = request as typeof request;
+
+        const athletes: TournamentRequestXlsxAthlete[] = request.athletes.map(
+            ({ athlete, weightCategory }) => ({
                 gender: this.formatGender(athlete.gender),
                 fullName: this.formatUserFullName(athlete),
                 birthDate: athlete.birthDate,
@@ -719,19 +751,26 @@ export class TournamentService {
                 ),
                 sportRank: athlete.sportRank?.name ?? '',
                 belt: athlete.belt?.name ?? '',
-                city: 'Тюмень',
-                federalDistrict: 'УрФО',
-                department: 'МинОбр',
+                city: xlsxRequest.athleteCity ?? '',
+                federalDistrict: xlsxRequest.athleteFederalDistrict ?? '',
+                department: xlsxRequest.athleteSportsSociety ?? '',
                 organization: request.organization,
-                firstTrainer: athlete.firstTrainer ?? ''
-            }));
+                firstTrainer: this.formatTrainerNames(
+                    athlete.firstTrainer,
+                    athlete.invitedBy
+                )
+            })
+        );
 
         const buffer = await buildTournamentRequestXlsx({
             tournamentName: request.tournament.name,
             tournamentCity: request.tournament.city,
             startDate: request.tournament.startDate,
             endDate: request.tournament.endDate,
-            representativeName: 'Нестеренков Д.А.',
+            approvalOrganizationLine1: xlsxRequest.approvalOrganizationLine1,
+            approvalOrganizationLine2: xlsxRequest.approvalOrganizationLine2,
+            approvalPersonName: xlsxRequest.approvalPersonName,
+            representativeName: xlsxRequest.teamRepresentativeName ?? '',
             athletes
         });
 
@@ -760,6 +799,58 @@ export class TournamentService {
         return [user.lastName, user.firstName, user.middleName]
             .filter(Boolean)
             .join(' ');
+    }
+
+    private formatTrainerNames(
+        firstTrainer: string,
+        currentTrainer?: Pick<User, 'lastName' | 'firstName' | 'middleName'>
+    ): string {
+        return [
+            this.formatTrainerNameString(firstTrainer),
+            currentTrainer &&
+                this.formatUserFullNameWithInitials(currentTrainer)
+        ]
+            .filter(Boolean)
+            .join(', ');
+    }
+
+    private formatTrainerNameString(fullName?: string): string {
+        if (!fullName) {
+            return '';
+        }
+
+        const normalized = fullName.trim().replace(/\s+/g, ' ');
+
+        if (/^[^\s]+\s+[А-ЯЁA-Z]\.\s*[А-ЯЁA-Z]\.?$/i.test(normalized)) {
+            return normalized;
+        }
+
+        const [lastName, firstName, middleName] = normalized.split(' ');
+
+        if (!lastName || !firstName) {
+            return normalized;
+        }
+
+        return [
+            lastName,
+            [firstName, middleName]
+                .filter(Boolean)
+                .map(name => `${name[0]}.`)
+                .join(' ')
+        ]
+            .filter(Boolean)
+            .join(' ');
+    }
+
+    private formatUserFullNameWithInitials(
+        user: Pick<User, 'lastName' | 'firstName' | 'middleName'>
+    ): string {
+        const initials = [user.firstName, user.middleName]
+            .filter(Boolean)
+            .map(name => `${name[0]}.`)
+            .join(' ');
+
+        return [user.lastName, initials].filter(Boolean).join(' ');
     }
 
     private formatWeightCategory(
@@ -800,6 +891,18 @@ export class TournamentService {
         return `${category.name} ${oldestBirthYear} - ${youngestBirthYear} г.р.`;
     }
 
+    private getTournamentRequestXlsxData(dto: TournamentApplicationRequestDto) {
+        return {
+            approvalOrganizationLine1: dto.approvalOrganizationLine1,
+            approvalOrganizationLine2: dto.approvalOrganizationLine2,
+            approvalPersonName: dto.approvalPersonName,
+            athleteCity: dto.athleteCity,
+            athleteFederalDistrict: dto.athleteFederalDistrict,
+            athleteSportsSociety: dto.athleteSportsSociety,
+            teamRepresentativeName: dto.teamRepresentativeName
+        };
+    }
+
     async updateRequest(
         id: number,
         user: JwtPayload,
@@ -817,6 +920,7 @@ export class TournamentService {
             where: { id },
             data: {
                 organization: dto.organization,
+                ...this.getTournamentRequestXlsxData(dto),
                 athletes: {
                     deleteMany: {},
                     create: dto.athletes.map(
@@ -826,7 +930,7 @@ export class TournamentService {
                         })
                     )
                 }
-            }
+            } as any
         });
 
         return this.getRequestDtoById({ id, requesterUser: user });
