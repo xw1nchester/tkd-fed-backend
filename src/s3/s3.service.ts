@@ -164,10 +164,11 @@ export class S3Service implements OnModuleInit {
                     Key: key
                 })
             );
+
             this.logger.debug(`File deleted ${key}`);
         } catch (err) {
+            
             this.logger.error('Error delete file:', err);
-            throw new InternalServerErrorException('Can not delete file');
         }
     }
 }

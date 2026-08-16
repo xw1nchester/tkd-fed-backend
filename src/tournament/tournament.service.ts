@@ -160,7 +160,7 @@ export class TournamentService {
     async create(dto: TournamentRequestDto, creatorId: number) {
         const startDate = new Date(dto.startDate);
         const endDate = new Date(dto.endDate);
-        const { files, ...tournamentData } = dto;
+        const { files = [], ...tournamentData } = dto;
 
         this.validateDates(startDate, endDate);
         await this.validateTournamentFiles(dto);
@@ -279,7 +279,7 @@ export class TournamentService {
         const fileIds = [
             dto.logoId,
             dto.bannerId,
-            ...dto.files.map(file => file.fileId)
+            ...(dto.files ?? []).map(file => file.fileId)
         ].filter((id): id is number => id !== undefined && id !== null);
 
         if (!fileIds.length) {
@@ -326,6 +326,20 @@ export class TournamentService {
         throw new NotFoundException('Заявка на турнир не найдена');
     }
 
+    private getTournamentFileIds(
+        tournament: Tournament & {
+            files?: { fileId: number }[];
+        }
+    ) {
+        return new Set(
+            [
+                tournament.logoId,
+                tournament.bannerId,
+                ...(tournament.files ?? []).map(file => file.fileId)
+            ].filter((fileId): fileId is number => !!fileId)
+        );
+    }
+
     async update(id: number, user: JwtPayload, dto: TournamentRequestDto) {
         const existingTournament = await this.getById(id);
         this.ensureCanModify(existingTournament, user);
@@ -337,12 +351,18 @@ export class TournamentService {
         this.validateDates(startDate, endDate);
         await this.validateTournamentFiles(dto);
 
-        const retainedFileIds = new Set(
+        const oldFileIds = this.getTournamentFileIds(existingTournament);
+
+        const newFileIds = new Set(
             [
                 dto.logoId,
                 dto.bannerId,
                 ...(files ?? existingTournament.files).map(file => file.fileId)
             ].filter((fileId): fileId is number => !!fileId)
+        );
+
+        const fileIdsToDelete = [...oldFileIds].filter(
+            fileId => !newFileIds.has(fileId)
         );
 
         await this.prismaService.$transaction(async tx => {
@@ -364,20 +384,8 @@ export class TournamentService {
                 }
             });
 
-            if (
-                existingTournament.logoId &&
-                existingTournament.logoId != dto.logoId &&
-                !retainedFileIds.has(existingTournament.logoId)
-            ) {
-                await this.fileService.delete(existingTournament.logoId, tx);
-            }
-
-            if (
-                existingTournament.bannerId &&
-                existingTournament.bannerId != dto.bannerId &&
-                !retainedFileIds.has(existingTournament.bannerId)
-            ) {
-                await this.fileService.delete(existingTournament.bannerId, tx);
+            for (const fileId of fileIdsToDelete) {
+                await this.fileService.delete(fileId, tx);
             }
         });
 
@@ -388,15 +396,13 @@ export class TournamentService {
         const existingTournament = await this.getById(id);
         this.ensureCanModify(existingTournament, user);
 
+        const fileIdsToDelete = this.getTournamentFileIds(existingTournament);
+
         await this.prismaService.$transaction(async tx => {
             await tx.tournament.delete({ where: { id } });
 
-            // TODO: удалять также прикрепленные файлы
-            for (const fileId of new Set([
-                existingTournament.logoId,
-                existingTournament.bannerId
-            ])) {
-                if (fileId) await this.fileService.delete(fileId, tx);
+            for (const fileId of fileIdsToDelete) {
+                await this.fileService.delete(fileId, tx);
             }
         });
 
@@ -493,8 +499,10 @@ export class TournamentService {
         });
 
         return {
-            approvalOrganizationLine1: request?.approvalOrganizationLine1 || null,
-            approvalOrganizationLine2: request?.approvalOrganizationLine2 || null,
+            approvalOrganizationLine1:
+                request?.approvalOrganizationLine1 || null,
+            approvalOrganizationLine2:
+                request?.approvalOrganizationLine2 || null,
             approvalPersonName: request?.approvalPersonName || null,
             athleteCity: request?.athleteCity || null,
             athleteFederalDistrict: request?.athleteFederalDistrict || null,

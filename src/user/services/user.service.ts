@@ -153,9 +153,7 @@ export class UserService {
         return {
             id: documentTemplate.id,
             createdAt: documentTemplate.createdAt,
-            file: await this.fileService.createPrivateDto(
-                documentTemplate.file
-            )
+            file: await this.fileService.createPrivateDto(documentTemplate.file)
         };
     }
 
@@ -334,7 +332,24 @@ export class UserService {
             );
         }
 
-        await this.prismaService.user.delete({ where: { id } });
+        await this.prismaService.$transaction(async tx => {
+            const files = await tx.file.findMany({
+                where: { userId: id },
+                select: { storageKey: true }
+            });
+
+            if (files.length) {
+                await tx.pendingFileDeletion.createMany({
+                    data: files.map(file => ({
+                        storageKey: file.storageKey
+                    }))
+                });
+            }
+
+            await tx.user.delete({
+                where: { id }
+            });
+        });
 
         return dto;
     }

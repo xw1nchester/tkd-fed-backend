@@ -1,19 +1,30 @@
 model File {
-    id                Int          @id @default(autoincrement())
-    userId            Int          @map("user_id")
-    user              User         @relation("UserFiles", fields: [userId], references: [id], onDelete: Cascade)
-    storageKey        String       @map("storage_key")
-    mimeType          String       @map("mime_type")
+    id                Int                @id @default(autoincrement())
+    userId            Int                @map("user_id")
+    user              User               @relation("UserFiles", fields: [userId], references: [id], onDelete: Cascade)
+    storageKey        String             @map("storage_key")
+    mimeType          String             @map("mime_type")
     filename          String
-    size              Int          @default(0)
-    createdAt         DateTime     @default(now()) @map("created_at")
+    size              Int                @default(0)
+    createdAt         DateTime           @default(now()) @map("created_at")
     documents         Document[]
     documentTemplates DocumentTemplate[]
     tournamentFiles   TournamentFile[]
-    avatars           User[]       @relation("UserAvatar")
-    tournamentLogos   Tournament[] @relation("TournamentLogo")
-    tournamentBanners Tournament[] @relation("TournamentBanner")
-    teamLogos         Team[]       @relation("TeamLogo")
+    avatars           User[]             @relation("UserAvatar")
+    tournamentLogos   Tournament[]       @relation("TournamentLogo")
+    tournamentBanners Tournament[]       @relation("TournamentBanner")
+    teamLogos         Team[]             @relation("TeamLogo")
 
     @@map("files")
+}
+
+model PendingFileDeletion {
+    id         Int       @id @default(autoincrement())
+    storageKey String    @map("storage_key")
+    attempts   Int       @default(0)
+    lockedAt   DateTime? @map("locked_at")
+    lastError  String?   @map("last_error")
+    createdAt  DateTime  @default(now()) @map("created_at")
+
+    @@map("pending_file_deletions")
 }

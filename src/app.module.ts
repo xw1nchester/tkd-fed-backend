@@ -23,10 +23,12 @@ import { TournamentModule } from './tournament/tournament.module';
 import { UserModule } from './user/user.module';
 import { WeightCategoryModule } from './weight-category/weight-category.module';
 import { S3Module } from '@s3/s3.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
+        ScheduleModule.forRoot(),
         PrismaModule,
         AuthModule,
         UserModule,

@@ -1,15 +1,24 @@
-import { File, Prisma } from '@prisma-client';
+import { File, PendingFileDeletion, Prisma } from '@prisma-client';
 import { extension } from 'mime-types';
 import { extname } from 'path';
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '@prisma/prisma.service';
 
 import { FileVisibility, S3Service } from '@s3/s3.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
+
+interface RawPendingFileDeletion {
+    id: number;
+    storage_key: string;
+    created_at: string;
+}
 
 @Injectable()
 export class FileService {
+    private readonly logger = new Logger(FileService.name);
+
     constructor(
         private readonly prismaService: PrismaService,
         private readonly s3Service: S3Service
@@ -66,27 +75,12 @@ export class FileService {
         return originalExtension || 'bin';
     }
 
-    // async save(userId: number, files: CreateFileDto[]) {
-    //     const data = await this.prismaService.$transaction(
-    //         files.map(file =>
-    //             this.prismaService.file.create({
-    //                 data: {
-    //                     userId,
-    //                     ...file
-    //                 }
-    //             })
-    //         )
-    //     );
-
-    //     return { files: data.map(file => this.createDto(file)) };
-    // }
-
     async save(
         userId: number,
         files: Express.Multer.File[],
         visibility = FileVisibility.PUBLIC
     ) {
-        const uploadedFiles = await Promise.all(
+        const uploadResults = await Promise.allSettled(
             files.map(async file => {
                 const uploaded = await this.s3Service.uploadFile(
                     file.buffer,
@@ -103,6 +97,24 @@ export class FileService {
                 };
             })
         );
+
+        const uploadedFiles = uploadResults
+            .filter(result => result.status === 'fulfilled')
+            .map(result => result.value);
+
+        const failedUpload = uploadResults.find(
+            result => result.status === 'rejected'
+        );
+
+        if (failedUpload) {
+            await Promise.allSettled(
+                uploadedFiles.map(file =>
+                    this.s3Service.deleteFile(file.storageKey)
+                )
+            );
+
+            throw failedUpload.reason;
+        }
 
         try {
             const data = await this.prismaService.$transaction(
@@ -159,10 +171,82 @@ export class FileService {
             throw new NotFoundException('File not found');
         }
 
+        await prismaService.pendingFileDeletion.create({
+            data: { storageKey: file.storageKey }
+        });
+
         await prismaService.file.delete({
             where: { id }
         });
+    }
 
-        await this.s3Service.deleteFile(file.storageKey);
+    @Cron(CronExpression.EVERY_HOUR)
+    async processDeletedFiles() {
+        const startedAt = Date.now();
+
+        const records = await this.prismaService.$transaction(async tx => {
+            const rows = await tx.$queryRaw<RawPendingFileDeletion[]>`
+            SELECT *
+            FROM "pending_file_deletions"
+            WHERE "locked_at" IS NULL
+               OR "locked_at" < NOW() - INTERVAL '1 hour'
+            ORDER BY "created_at"
+            LIMIT 100
+            FOR UPDATE SKIP LOCKED
+        `;
+
+            if (rows.length) {
+                await tx.pendingFileDeletion.updateMany({
+                    where: {
+                        id: {
+                            in: rows.map(row => row.id)
+                        }
+                    },
+                    data: {
+                        lockedAt: new Date()
+                    }
+                });
+            }
+
+            return rows;
+        });
+
+        if (!records.length) {
+            this.logger.debug('File deletion outbox: no pending files');
+            return;
+        }
+
+        let deleted = 0;
+        let failed = 0;
+
+        for (const record of records) {
+            try {
+                await this.s3Service.deleteFile(record.storage_key);
+
+                await this.prismaService.pendingFileDeletion.delete({
+                    where: { id: record.id }
+                });
+
+                deleted++;
+            } catch (err) {
+                failed++;
+
+                await this.prismaService.pendingFileDeletion.update({
+                    where: { id: record.id },
+                    data: {
+                        lockedAt: null,
+                        attempts: {
+                            increment: 1
+                        },
+                        lastError:
+                            err instanceof Error ? err.message : 'Unknown error'
+                    }
+                });
+            }
+        }
+
+        this.logger.log(
+            `File deletion outbox finished: ${deleted} deleted, ${failed} failed, ${Date.now() - startedAt}ms`
+        );
     }
 }
