@@ -19,7 +19,7 @@ class TournamentFileRequestDto {
     @IsString()
     name: string;
 
-    @ApiProperty({ example: 7 })
+    @ApiProperty({ example: 1 })
     @IsInt()
     @Transform(({ value }) => Number(value))
     fileId: number;
@@ -31,7 +31,7 @@ export class TournamentRequestDto {
     @IsNotEmpty()
     name: string;
 
-    @ApiPropertyOptional({ example: 7, nullable: true })
+    @ApiPropertyOptional({ example: 1, nullable: true })
     @IsOptional()
     @IsInt()
     @Transform(({ value }) =>
@@ -39,7 +39,7 @@ export class TournamentRequestDto {
     )
     logoId?: number | null;
 
-    @ApiPropertyOptional({ example: 8, nullable: true })
+    @ApiPropertyOptional({ example: 2, nullable: true })
     @IsOptional()
     @IsInt()
     @Transform(({ value }) =>
@@ -97,20 +97,11 @@ export class TournamentRequestDto {
     @IsString()
     description?: string;
 
-    @ApiPropertyOptional({
-        type: [TournamentFileRequestDto],
-        example: [
-            { name: 'Положение', fileId: 9 },
-            { name: 'Регламент', fileId: 10 },
-            { name: 'Программа', fileId: 11 },
-            { name: 'Согласие', fileId: 12 }
-        ]
-    })
-    @IsOptional()
+    @ApiProperty({ type: [TournamentFileRequestDto] })
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => TournamentFileRequestDto)
-    files?: TournamentFileRequestDto[];
+    files: TournamentFileRequestDto[];
 
     @ApiProperty({ example: true })
     @IsBoolean()
