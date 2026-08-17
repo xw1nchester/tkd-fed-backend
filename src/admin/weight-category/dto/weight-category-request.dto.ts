@@ -20,7 +20,9 @@ export class WeightCategoryRequestDto {
         value === null || value === undefined ? value : Number(value)
     )
     @IsPositive()
-    @ValidateIf(dto => typeof dto.maxWeight === 'undefined')
+    @ValidateIf(
+        dto => typeof dto.maxWeight === null || dto.maxWeight === undefined
+    )
     minWeight: number;
 
     @ApiProperty({ example: 65 })
@@ -29,6 +31,8 @@ export class WeightCategoryRequestDto {
         value === null || value === undefined ? value : Number(value)
     )
     @IsPositive()
-    @ValidateIf(dto => typeof dto.minWeight === 'undefined')
+    @ValidateIf(
+        dto => typeof dto.minWeight === null || dto.minWeight === undefined
+    )
     maxWeight: number;
 }

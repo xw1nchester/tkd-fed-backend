@@ -2,9 +2,9 @@ import { Transform } from 'class-transformer';
 import {
     IsNotEmpty,
     IsNumber,
-    IsOptional,
     IsPositive,
-    IsString
+    IsString,
+    ValidateIf
 } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
@@ -17,8 +17,11 @@ export class AgeCategoryRequestDto {
 
     @ApiProperty({ example: 16 })
     @IsNumber()
-    @Transform(({ value }) => Number(value))
+    @Transform(({ value }) =>
+        value === null || value === undefined ? value : Number(value)
+    )
     @IsPositive()
+    @ValidateIf(dto => dto.maxAge === null || dto.maxAge === undefined)
     minAge: number;
 
     @ApiProperty({ example: 20 })
@@ -27,6 +30,6 @@ export class AgeCategoryRequestDto {
         value === null || value === undefined ? value : Number(value)
     )
     @IsPositive()
-    @IsOptional()
+    @ValidateIf(dto => dto.minAge === null || dto.minAge === undefined)
     maxAge: number;
 }

@@ -1,7 +1,7 @@
 model AgeCategory {
     id               Int              @id @default(autoincrement())
     name             String
-    minAge           Int              @map("min_age")
+    minAge           Int?             @map("min_age")
     maxAge           Int?             @map("max_age")
     weightCategories WeightCategory[]
 
