@@ -1,3 +1,4 @@
+import { Gender } from '@prisma-client';
 import { Expose, Type } from 'class-transformer';
 import {
     IsEnum,
@@ -50,19 +51,20 @@ export class UserQueryDto extends PaginationQueryDto {
     @IsOptional()
     order?: OrderOption;
 
-    @ApiProperty({ name: 'min_age', example: 16, required: false })
+    @ApiProperty({
+        enum: Gender,
+        example: Gender.MALE,
+        required: false
+    })
+    @IsEnum(Gender)
     @IsOptional()
-    @Type(() => Number)
-    @IsInt()
-    @IsPositive()
-    @Expose({ name: 'min_age' })
-    minAge?: number;
+    gender?: Gender;
 
-    @ApiProperty({ name: 'max_age', example: 20, required: false })
+    @ApiProperty({ name: 'age_category_id', example: 1, required: false })
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @IsPositive()
-    @Expose({ name: 'max_age' })
-    maxAge?: number;
+    @Expose({ name: 'age_category_id' })
+    ageCategoryId?: number;
 }

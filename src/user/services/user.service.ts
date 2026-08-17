@@ -354,25 +354,32 @@ export class UserService {
         return dto;
     }
 
-    private getBirthDateFilter(minAge?: number, maxAge?: number) {
-        if (minAge == undefined && maxAge == undefined) return {};
+    private async getBirthDateFilter(ageCategoryId?: number) {
+        if (ageCategoryId == undefined) return {};
+
+        const ageCategory = await this.prismaService.ageCategory.findUnique({
+            where: { id: ageCategoryId },
+            select: { minAge: true, maxAge: true }
+        });
+
+        if (!ageCategory) {
+            throw new NotFoundException('Возрастная категория не найдена');
+        }
 
         const today = new Date();
 
         const birthDateFilter: Prisma.DateTimeFilter = {};
 
         // минимум возраста -> пользователь должен быть не младше
-        if (minAge !== undefined) {
-            const date = new Date(today);
-            date.setFullYear(today.getFullYear() - minAge);
+        const minAgeDate = new Date(today);
+        minAgeDate.setFullYear(today.getFullYear() - ageCategory.minAge);
 
-            birthDateFilter.lte = date;
-        }
+        birthDateFilter.lte = minAgeDate;
 
         // максимум возраста -> пользователь должен быть не старше
-        if (maxAge !== undefined) {
+        if (ageCategory.maxAge !== null) {
             const date = new Date(today);
-            date.setFullYear(today.getFullYear() - maxAge - 1);
+            date.setFullYear(today.getFullYear() - ageCategory.maxAge - 1);
             date.setDate(date.getDate() + 1);
 
             birthDateFilter.gte = date;
@@ -402,20 +409,58 @@ export class UserService {
             roleId,
             excludedTeamId,
             isTrainer,
-            minAge,
-            maxAge
+            gender,
+            ageCategoryId
         } = query;
         let { sortBy, order } = query;
         const skip = (page - 1) * limit;
 
-        const where: Prisma.UserWhereInput = {
-            ...(excludeAdmins && {
+        const roleFilters: Prisma.UserWhereInput[] = [];
+
+        if (excludeAdmins) {
+            roleFilters.push({
                 roles: {
                     none: {
                         name: RoleEnum.ADMIN
                     }
                 }
-            }),
+            });
+        }
+
+        if (roleId) {
+            roleFilters.push({
+                roles: {
+                    some: {
+                        id: roleId
+                    }
+                }
+            });
+        }
+
+        if (isTrainer === true) {
+            roleFilters.push({
+                roles: {
+                    some: {
+                        name: RoleEnum.TRAINER
+                    }
+                }
+            });
+        }
+
+        if (isTrainer === false) {
+            roleFilters.push({
+                roles: {
+                    none: {
+                        name: RoleEnum.TRAINER
+                    }
+                }
+            });
+        }
+
+        const birthDateFilter = await this.getBirthDateFilter(ageCategoryId);
+
+        const where: Prisma.UserWhereInput = {
+            ...(roleFilters.length > 0 && { AND: roleFilters }),
             ...(!!search && {
                 OR: [
                     {
@@ -455,21 +500,10 @@ export class UserService {
                     }
                 }
             }),
-            ...(roleId && {
-                roles: {
-                    some: {
-                        id: roleId
-                    }
-                }
-            }),
-            ...(isTrainer && {
-                roles: {
-                    some: {
-                        name: RoleEnum.TRAINER
-                    }
-                }
-            }),
-            birthDate: this.getBirthDateFilter(minAge, maxAge)
+            ...(gender && { gender }),
+            ...(Object.keys(birthDateFilter).length > 0 && {
+                birthDate: birthDateFilter
+            })
         };
 
         sortBy = sortBy ?? SortOption.CREATED_AT;
