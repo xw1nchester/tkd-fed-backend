@@ -292,7 +292,9 @@ export class TournamentService {
         });
 
         if (!filesExist) {
-            throw new NotFoundException('Файл не найден или не может быть использован как публичный файл');
+            throw new NotFoundException(
+                'Файл не найден или не может быть использован как публичный файл'
+            );
         }
     }
 

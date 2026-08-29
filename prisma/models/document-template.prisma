@@ -4,6 +4,7 @@ model DocumentTemplate {
     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     fileId    Int      @map("file_id")
     file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+    visibleToInvitedTrainers  Boolean  @default(false) @map("visible_to_invited_trainers")
     createdAt DateTime @default(now()) @map("created_at")
 
     @@map("document_templates")

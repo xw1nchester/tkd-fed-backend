@@ -80,7 +80,8 @@ export class UserController {
     ) {
         return await this.userService.createDocumentTemplate(
             user.id,
-            dto.fileId
+            dto.fileId,
+            dto.visibleToInvitedTrainers
         );
     }
 

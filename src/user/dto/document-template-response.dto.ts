@@ -6,6 +6,12 @@ export class DocumentTemplateResponseDto {
     @ApiProperty({ example: 1 })
     id: number;
 
+    @ApiProperty({ example: true })
+    isOwner: boolean;
+
+    @ApiProperty({ example: true })
+    visibleToInvitedTrainers: boolean;
+
     @ApiProperty()
     createdAt: Date;
 

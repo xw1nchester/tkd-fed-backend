@@ -132,7 +132,9 @@ export class TeamService {
         });
 
         if (!fileExists) {
-            throw new NotFoundException('Файл не найден или не может быть использован как публичный файл');
+            throw new NotFoundException(
+                'Файл не найден или не может быть использован как публичный файл'
+            );
         }
     }
 

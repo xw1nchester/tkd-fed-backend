@@ -148,7 +148,7 @@ export class S3Service implements OnModuleInit {
         extension = 'bin'
     ) {
         try {
-           const key = `${this.getPrefix(visibility)}/${randomUUID()}.${extension}`;
+            const key = `${this.getPrefix(visibility)}/${randomUUID()}.${extension}`;
 
             await this.s3.send(
                 new PutObjectCommand({

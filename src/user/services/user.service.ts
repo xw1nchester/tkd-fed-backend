@@ -149,16 +149,23 @@ export class UserService {
     }
 
     async createDocumentTemplateDto(
-        documentTemplate: DocumentTemplate & { file: File }
+        documentTemplate: DocumentTemplate & { file: File },
+        currentUserId: number
     ) {
         return {
             id: documentTemplate.id,
+            isOwner: documentTemplate.userId === currentUserId,
+            visibleToInvitedTrainers: documentTemplate.visibleToInvitedTrainers,
             createdAt: documentTemplate.createdAt,
             file: await this.fileService.createPrivateDto(documentTemplate.file)
         };
     }
 
-    async createDocumentTemplate(userId: number, fileId: number) {
+    async createDocumentTemplate(
+        userId: number,
+        fileId: number,
+        visibleToInvitedTrainers: boolean
+    ) {
         const fileExists = await this.fileService.exists(fileId, {
             userId,
             visibility: FileVisibility.PRIVATE
@@ -174,7 +181,8 @@ export class UserService {
             await this.prismaService.documentTemplate.create({
                 data: {
                     userId,
-                    fileId
+                    fileId,
+                    visibleToInvitedTrainers
                 },
                 include: {
                     file: true
@@ -182,15 +190,52 @@ export class UserService {
             });
 
         return {
-            documentTemplate:
-                await this.createDocumentTemplateDto(documentTemplate)
+            documentTemplate: await this.createDocumentTemplateDto(
+                documentTemplate,
+                userId
+            )
         };
     }
 
+    private async getAncestorTrainerIds(userId: number) {
+        const rows = await this.prismaService.$queryRaw<{ id: number }[]>`
+            WITH RECURSIVE ancestors(id, path) AS (
+                SELECT u."invited_by_id", ARRAY[u."id"]
+                FROM "users" u
+                WHERE u."id" = ${userId}
+                AND u."invited_by_id" IS NOT NULL
+
+                UNION ALL
+
+                SELECT parent."invited_by_id", ancestors.path || parent."id"
+                FROM "users" parent
+                JOIN ancestors ON parent."id" = ancestors.id
+                WHERE parent."invited_by_id" IS NOT NULL
+                AND NOT parent."id" = ANY(ancestors.path)
+            )
+            SELECT id
+            FROM ancestors
+            WHERE id IS NOT NULL
+            AND id <> ${userId}
+        `;
+
+        return rows.map(row => row.id);
+    }
+
     async getDocumentTemplates(userId: number) {
+        const ancestorTrainerIds = await this.getAncestorTrainerIds(userId);
+
         const documentTemplates =
             await this.prismaService.documentTemplate.findMany({
-                where: { userId },
+                where: {
+                    OR: [
+                        { userId },
+                        {
+                            userId: { in: ancestorTrainerIds },
+                            visibleToInvitedTrainers: true
+                        }
+                    ]
+                },
                 include: {
                     file: true
                 },
@@ -202,7 +247,7 @@ export class UserService {
         return {
             documentTemplates: await Promise.all(
                 documentTemplates.map(documentTemplate =>
-                    this.createDocumentTemplateDto(documentTemplate)
+                    this.createDocumentTemplateDto(documentTemplate, userId)
                 )
             )
         };
@@ -224,7 +269,10 @@ export class UserService {
             throw new NotFoundException('Document template not found');
         }
 
-        const dto = await this.createDocumentTemplateDto(documentTemplate);
+        const dto = await this.createDocumentTemplateDto(
+            documentTemplate,
+            userId
+        );
 
         await this.fileService.delete(documentTemplate.fileId);
 

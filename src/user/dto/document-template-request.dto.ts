@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsInt } from 'class-validator';
+import { IsBoolean, IsInt } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -8,4 +8,8 @@ export class DocumentTemplateRequestDto {
     @IsInt()
     @Transform(({ value }) => Number(value))
     fileId: number;
+
+    @ApiProperty({ example: true })
+    @IsBoolean()
+    visibleToInvitedTrainers: boolean;
 }
