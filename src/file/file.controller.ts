@@ -19,11 +19,11 @@ import {
 
 import { CurrentUser } from '@auth/decorators';
 import { JwtPayload } from '@auth/interfaces';
-import { FileVisibility } from '@s3/s3.service';
 
 import { FilesResponseDto } from './dto/file-response.dto';
 import { FileUploadRequestDto } from './dto/file-upload-request.dto';
 import { FileService } from './file.service';
+import { FileVisibility } from '@prisma-client';
 
 type FileUploadMulterOptions = MulterOptions & {
     defParamCharset?: string;

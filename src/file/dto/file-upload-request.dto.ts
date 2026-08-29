@@ -1,8 +1,7 @@
 import { IsEnum, IsOptional } from 'class-validator';
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-
-import { FileVisibility } from '@s3/s3.service';
+import { FileVisibility } from '@prisma-client';
 
 export class FileUploadRequestDto {
     @ApiPropertyOptional({

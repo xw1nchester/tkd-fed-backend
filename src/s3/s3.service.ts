@@ -14,12 +14,13 @@ import {
     OnModuleInit
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { FileVisibility } from '@prisma-client';
 import { randomUUID } from 'crypto';
 
-export enum FileVisibility {
-    PUBLIC = 'public',
-    PRIVATE = 'private'
-}
+const FILE_VISIBILITY_PREFIX: Record<FileVisibility, string> = {
+    [FileVisibility.PUBLIC]: 'public',
+    [FileVisibility.PRIVATE]: 'private'
+};
 
 @Injectable()
 export class S3Service implements OnModuleInit {
@@ -89,7 +90,8 @@ export class S3Service implements OnModuleInit {
     async onModuleInit() {
         const credentials = {
             accessKeyId: this.configService.getOrThrow<string>('S3_ACCESS_KEY'),
-            secretAccessKey: this.configService.getOrThrow<string>('S3_SECRET_KEY')
+            secretAccessKey:
+                this.configService.getOrThrow<string>('S3_SECRET_KEY')
         };
 
         this.s3 = new S3Client({
@@ -110,8 +112,18 @@ export class S3Service implements OnModuleInit {
         await this.makePublicPrefixReadable();
     }
 
+    private getPrefix(visibility: FileVisibility) {
+        return FILE_VISIBILITY_PREFIX[visibility];
+    }
+
+    isPublicKey(key: string) {
+        return key.startsWith(
+            `${FILE_VISIBILITY_PREFIX[FileVisibility.PUBLIC]}/`
+        );
+    }
+
     getPublicUrl(key: string) {
-        if (!key.startsWith(`${FileVisibility.PUBLIC}/`)) {
+        if (!this.isPublicKey(key)) {
             throw new InternalServerErrorException('File is not public');
         }
 
@@ -132,11 +144,11 @@ export class S3Service implements OnModuleInit {
     async uploadFile(
         body: Buffer,
         contentType: string,
-        visibility = FileVisibility.PRIVATE,
+        visibility: FileVisibility = FileVisibility.PUBLIC,
         extension = 'bin'
     ) {
         try {
-            const key = `${visibility}/${randomUUID()}.${extension}`;
+           const key = `${this.getPrefix(visibility)}/${randomUUID()}.${extension}`;
 
             await this.s3.send(
                 new PutObjectCommand({
@@ -167,7 +179,6 @@ export class S3Service implements OnModuleInit {
 
             this.logger.debug(`File deleted ${key}`);
         } catch (err) {
-            
             this.logger.error('Error delete file:', err);
         }
     }

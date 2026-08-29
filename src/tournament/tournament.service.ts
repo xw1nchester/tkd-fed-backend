@@ -1,6 +1,7 @@
 import {
     AgeCategory,
     File,
+    FileVisibility,
     Gender,
     Prisma,
     Role,
@@ -286,10 +287,12 @@ export class TournamentService {
             return;
         }
 
-        const filesExist = await this.fileService.exists(fileIds);
+        const filesExist = await this.fileService.exists(fileIds, {
+            visibility: FileVisibility.PUBLIC
+        });
 
         if (!filesExist) {
-            throw new NotFoundException('Файл не найден');
+            throw new NotFoundException('Файл не найден или не может быть использован как публичный файл');
         }
     }
 

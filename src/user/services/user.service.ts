@@ -4,6 +4,7 @@ import {
     DocumentTemplate,
     DocumentVerification,
     File,
+    FileVisibility,
     Prisma,
     Role,
     SportRank,
@@ -158,10 +159,15 @@ export class UserService {
     }
 
     async createDocumentTemplate(userId: number, fileId: number) {
-        const fileExists = await this.fileService.exists(fileId, userId);
+        const fileExists = await this.fileService.exists(fileId, {
+            userId,
+            visibility: FileVisibility.PRIVATE
+        });
 
         if (!fileExists) {
-            throw new NotFoundException('Файл не найден');
+            throw new NotFoundException(
+                'Файл не найден или не может быть использован как приватный документ'
+            );
         }
 
         const documentTemplate =
@@ -229,10 +235,14 @@ export class UserService {
         const user = await this.getById(id);
 
         // TODO: если загружает обычный пользователь, то необходимо проверить, что файл его
-        const fileExists = await this.fileService.exists(fileId);
+        const fileExists = await this.fileService.exists(fileId, {
+            visibility: FileVisibility.PUBLIC
+        });
 
         if (!fileExists) {
-            throw new NotFoundException('Файл не найден');
+            throw new NotFoundException(
+                'Файл не найден или не может быть использован как публичный файл'
+            );
         }
 
         await this.prismaService.$transaction(async tx => {
@@ -635,11 +645,14 @@ export class UserService {
 
         // TODO: если загружает обычный пользователь, то необходимо проверить, что файл его
         const filesExists = await this.fileService.exists(
-            documents.map(d => d.fileId)
+            documents.map(d => d.fileId),
+            { visibility: FileVisibility.PRIVATE }
         );
 
         if (!filesExists) {
-            throw new NotFoundException('Файл не найден');
+            throw new NotFoundException(
+                'Файл не найден или не может быть использован как приватный документ'
+            );
         }
 
         const oldDocuments = await this.prismaService.document.findMany({

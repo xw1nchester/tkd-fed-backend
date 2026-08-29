@@ -1,8 +1,14 @@
+enum FileVisibility {
+    PUBLIC
+    PRIVATE
+}
+
 model File {
     id                Int                @id @default(autoincrement())
     userId            Int                @map("user_id")
     user              User               @relation("UserFiles", fields: [userId], references: [id], onDelete: Cascade)
     storageKey        String             @map("storage_key")
+    visibility        FileVisibility     @default(PUBLIC)
     mimeType          String             @map("mime_type")
     filename          String
     size              Int                @default(0)

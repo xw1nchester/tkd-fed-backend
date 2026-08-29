@@ -1,4 +1,4 @@
-import { File, Prisma, Team } from '@prisma-client';
+import { File, FileVisibility, Prisma, Team } from '@prisma-client';
 
 import {
     ForbiddenException,
@@ -127,10 +127,12 @@ export class TeamService {
             return;
         }
 
-        const fileExists = await this.fileService.exists(dto.logoId);
+        const fileExists = await this.fileService.exists(dto.logoId, {
+            visibility: FileVisibility.PUBLIC
+        });
 
         if (!fileExists) {
-            throw new NotFoundException('Файл не найден');
+            throw new NotFoundException('Файл не найден или не может быть использован как публичный файл');
         }
     }
 

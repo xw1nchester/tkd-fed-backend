@@ -1,4 +1,4 @@
-import { File, PendingFileDeletion, Prisma } from '@prisma-client';
+import { File, FileVisibility, Prisma } from '@prisma-client';
 import { extension } from 'mime-types';
 import { extname } from 'path';
 
@@ -6,7 +6,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '@prisma/prisma.service';
 
-import { FileVisibility, S3Service } from '@s3/s3.service';
+import { S3Service } from '@s3/s3.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 interface RawPendingFileDeletion {
@@ -54,7 +54,7 @@ export class FileService {
     }
 
     private async createUploadDto(file: File) {
-        if (file.storageKey.startsWith(`${FileVisibility.PUBLIC}/`)) {
+        if (file.visibility == FileVisibility.PUBLIC) {
             return this.createPublicDto(file);
         }
 
@@ -78,7 +78,7 @@ export class FileService {
     async save(
         userId: number,
         files: Express.Multer.File[],
-        visibility = FileVisibility.PUBLIC
+        visibility: FileVisibility = FileVisibility.PUBLIC
     ) {
         const uploadResults = await Promise.allSettled(
             files.map(async file => {
@@ -122,6 +122,7 @@ export class FileService {
                     this.prismaService.file.create({
                         data: {
                             userId,
+                            visibility,
                             ...file
                         }
                     })
@@ -144,13 +145,23 @@ export class FileService {
         }
     }
 
-    async exists(ids: number | number[], userId?: number) {
+    async exists(
+        ids: number | number[],
+        options?: {
+            userId?: number;
+            visibility?: FileVisibility;
+        }
+    ) {
         ids = [...new Set(Array.isArray(ids) ? ids : [ids])];
 
         const where: Prisma.FileWhereInput = { id: { in: ids } };
 
-        if (userId != undefined) {
-            where.userId = userId;
+        if (options?.userId !== undefined) {
+            where.userId = options.userId;
+        }
+
+        if (options?.visibility !== undefined) {
+            where.visibility = options.visibility;
         }
 
         const count = await this.prismaService.file.count({
