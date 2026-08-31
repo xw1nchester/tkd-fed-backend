@@ -240,11 +240,49 @@ export class BeltAttestationService {
         );
     }
 
+    private async reserveCertificateSerials(
+        tx: Prisma.TransactionClient,
+        regionCode: string,
+        count: number
+    ) {
+        try {
+            const counter = await tx.beltCertificateCounter.update({
+                where: { regionCode },
+                data: {
+                    nextSerial: {
+                        increment: count
+                    }
+                }
+            });
+
+            const startSerial = counter.nextSerial - count;
+
+            return Array.from(
+                { length: count },
+                (_, index) => startSerial + index
+            );
+        } catch (error) {
+            if (
+                error instanceof Prisma.PrismaClientKnownRequestError &&
+                error.code === 'P2025'
+            ) {
+                throw new BadRequestException(
+                    'Счетчик сертификатов для региона не настроен'
+                );
+            }
+
+            throw error;
+        }
+    }
+
     async accept(id: number, chairman: JwtPayload) {
+        const regionCode = '72';
+        const certificateYear = new Date().getFullYear();
+
         await this.prismaService.$transaction(async tx => {
             const request = await tx.beltAttestationRequest.findFirst({
                 where: { id },
-                include: { athletes: true }
+                include: { athletes: { orderBy: { id: 'asc' } } }
             });
 
             if (!request) {
@@ -262,6 +300,26 @@ export class BeltAttestationService {
                     chairmanId: chairman.id
                 }
             });
+
+            const serials = await this.reserveCertificateSerials(
+                tx,
+                regionCode,
+                request.athletes.length
+            );
+
+            await Promise.all(
+                request.athletes.map((athlete, index) =>
+                    tx.beltAttestationAthlete.update({
+                        where: { id: athlete.id },
+                        data: {
+                            certificateRegionCode: regionCode,
+                            certificateYear,
+                            certificateSerial: serials[index],
+                            certificateIssuedAt: new Date()
+                        }
+                    })
+                )
+            );
 
             await Promise.all(
                 request.athletes.map(athlete =>
