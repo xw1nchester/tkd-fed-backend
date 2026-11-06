@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -24,6 +24,7 @@ import { UserModule } from './user/user.module';
 import { WeightCategoryModule } from './weight-category/weight-category.module';
 import { S3Module } from '@s3/s3.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { LoggerMiddleware } from './logger.midleware';
 
 @Module({
     imports: [
@@ -56,4 +57,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         RoleService
     ]
 })
-export class AppModule {}
+export class AppModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(LoggerMiddleware).forRoutes('*');
+    }
+}

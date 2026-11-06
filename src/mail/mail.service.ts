@@ -50,7 +50,7 @@ export class MailService {
         await this.sendEmail({
             subject: 'Подтверждение почты',
             to,
-            template: 'email-verification',
+            template: 'password-recovery',
             context: {
                 code
             }
