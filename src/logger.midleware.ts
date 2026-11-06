@@ -7,7 +7,9 @@ export class LoggerMiddleware implements NestMiddleware {
     private readonly logger = new Logger('HTTP');
 
     use(req: Request, res: Response, next: NextFunction) {
-        const { method, originalUrl, ip } = req;
+        const { method, originalUrl } = req;
+        // TODO: настроить trust proxy и брать req.ip
+        const ip = req.headers['x-forwarded-for'];
         const startTime = Date.now();
 
         res.on('finish', () => {
